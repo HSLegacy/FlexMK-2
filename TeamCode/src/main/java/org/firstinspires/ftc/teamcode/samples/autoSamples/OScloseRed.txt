@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.auto;
+package org.firstinspires.ftc.teamcode.samples.autoSamples;
 
 import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
@@ -10,8 +10,8 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.teamcode.FlyWheel;
-import org.firstinspires.ftc.teamcode.Turret;
+import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
+import org.firstinspires.ftc.teamcode.subSystems.Turret;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.Timer;

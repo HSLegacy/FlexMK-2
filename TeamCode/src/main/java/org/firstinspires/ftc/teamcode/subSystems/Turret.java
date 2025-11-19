@@ -1,26 +1,19 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.subSystems;
 import static dev.nextftc.extensions.pedro.PedroComponent.follower;
-import static dev.nextftc.ftc.ActiveOpMode.isStarted;
 
-import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.graph.GraphManager;
-import com.bylazar.telemetry.TelemetryManager;
-import com.bylazar.graph.PanelsGraph;
-import com.bylazar.telemetry.PanelsTelemetry;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
-import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.subsystems.Subsystem;
-import dev.nextftc.hardware.controllable.RunToState;
 import dev.nextftc.hardware.impl.MotorEx;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import org.firstinspires.ftc.teamcode.Teleop;
 
 import java.util.List;
+import java.util.Map;
 
 public class Turret implements Subsystem {
     public static final Turret INSTANCE = new Turret();
@@ -50,9 +43,9 @@ public class Turret implements Subsystem {
     public void varSwitch2(){
         switcher = false;
     }
-    public void lockOn(){
+    public void lockOn(Limelight3A limelight){
 
-            LLResult result = Teleop.limelight.getLatestResult();
+            LLResult result = limelight.getLatestResult();
 
 
             if (result != null && switcher == true) {
@@ -81,6 +74,28 @@ public class Turret implements Subsystem {
 
             //telemetry.update();
 
+    }
+
+    public Map<String, Double> LLStateMachine(Limelight3A limelight){
+       LLResult result = limelight.getLatestResult();
+       Map<String, Double> Data = null;
+
+
+            if (result != null) {
+
+
+                if (result.isValid()) {
+                    List<LLResultTypes.FiducialResult> feducialResults =  result.getFiducialResults();
+                    //telemetry.addData("Tx:", feducialResults.get(0).getTargetXDegrees());
+                    for(LLResultTypes.FiducialResult tag : feducialResults){
+                        switch(tag.getFiducialId()){
+                            case 20:
+                                Data.put("Pattern", 101);
+
+                        };
+                    }
+                }
+            }
     }
     public void setYLinear(double ty){
         double encoderClicksPerRev = 1440d / 360d;

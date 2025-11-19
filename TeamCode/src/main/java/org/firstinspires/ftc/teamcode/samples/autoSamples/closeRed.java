@@ -1,20 +1,9 @@
-package org.firstinspires.ftc.teamcode.auto;
+package org.firstinspires.ftc.teamcode.samples.autoSamples;
 
-import static dev.nextftc.extensions.pedro.PedroComponent.follower;
+import org.firstinspires.ftc.teamcode.subSystems.Turret;
+import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
+import static java.lang.Math.abs;
 
-import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-
-import org.firstinspires.ftc.teamcode.FlyWheel;
-import org.firstinspires.ftc.teamcode.Turret;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-
-import java.util.Timer;
 
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.delays.Delay;
@@ -31,9 +20,23 @@ import dev.nextftc.hardware.impl.ServoEx;
 import dev.nextftc.hardware.positionable.SetPosition;
 import dev.nextftc.hardware.powerable.SetPower;
 
-@Autonomous(name = "OScloseBlue")
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-public class OScloseBlue extends NextFTCOpMode {
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+
+import static dev.nextftc.extensions.pedro.PedroComponent.follower;
+
+import java.util.Timer;
+
+@Autonomous(name = "closeRed")
+
+public class closeRed extends NextFTCOpMode {
     CRServoEx intake = new CRServoEx("intake");
     ServoEx leftRelease = new ServoEx("lbar");
     ServoEx rightRelease = new ServoEx("rbar");
@@ -47,14 +50,25 @@ public class OScloseBlue extends NextFTCOpMode {
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
 
-    private final Pose startPose = new Pose(22, 123, Math.toRadians(144));
-    private final Pose launchPose = new Pose(37, 95, Math.toRadians(-52));
-    private final Pose parkPose = new Pose(37,120, Math.toRadians(180));
-    private final Pose launchPose2 = new Pose(34, 97, Math.toRadians(-52));
-    private final Pose pickUpPose = new Pose(44, 83, Math.toRadians(180));
-    private final Pose pickUp = new Pose(22, 83, Math.toRadians(180));
-
-    public PathChain launchPath, parkPath, pickUpBalls, launchPath2;
+    private final Pose startPose = new Pose(22, 123, Math.toRadians(144))
+            .mirror();
+    private final Pose launchPose = new Pose(37, 95, Math.toRadians(-45))
+            .mirror();
+    private final Pose parkPose = new Pose(37,120, Math.toRadians(180))
+            .mirror();
+    private final Pose launchPose2 = new Pose(34, 97, Math.toRadians(-45))
+            .mirror();
+    private final Pose pickUpPose = new Pose(46, 81, Math.toRadians(180))
+            .mirror();
+    private final Pose pickUp = new Pose(22, 81, Math.toRadians(180))
+            .mirror();
+    private final Pose pickUpPose2 = new Pose(44, 57, Math.toRadians(180))
+            .mirror();
+    private final Pose pickUp2 = new Pose(15, 57, Math.toRadians(180))
+            .mirror();
+    private final Pose midpoint = new Pose(30, 57, Math.toRadians(180))
+            .mirror();
+    public PathChain launchPath, parkPath, pickUpBalls, launchPath2, pickUpBalls2, launchPath3;
 
     public void buildPaths() {
 
@@ -76,6 +90,18 @@ public class OScloseBlue extends NextFTCOpMode {
                 .addPath(new BezierLine(pickUp, launchPose2))
                 .setLinearHeadingInterpolation(pickUp.getHeading(), launchPose2.getHeading())
                 .build();
+        pickUpBalls2 = follower().pathBuilder()
+                .addPath(new BezierLine(launchPose2, pickUpPose2))
+                .setLinearHeadingInterpolation(launchPose2.getHeading(), pickUpPose2.getHeading())
+                .addPath(new BezierLine(pickUpPose2, pickUp2))
+                .setLinearHeadingInterpolation(pickUpPose2.getHeading(), pickUp2.getHeading())
+                .build();
+        launchPath3 = follower().pathBuilder()
+                .addPath(new BezierLine(pickUp2, midpoint))
+                .setLinearHeadingInterpolation(pickUp2.getHeading(), midpoint.getHeading())
+                .addPath(new BezierLine(midpoint, launchPose2))
+                .setLinearHeadingInterpolation(midpoint.getHeading(), launchPose2.getHeading())
+                .build();
     }
 
     public Command launchBall = new SetPosition(triggerServo, .4);
@@ -86,7 +112,7 @@ public class OScloseBlue extends NextFTCOpMode {
     public Command leftGateClose = new SetPosition(leftRelease, .3);
     public Command runIntake = new SetPower(intake, -1);
 
-    public OScloseBlue() {
+    public closeRed() {
         addComponents(
                 new SubsystemComponent(Turret.INSTANCE),
                 new SubsystemComponent(FlyWheel.INSTANCE),
@@ -101,7 +127,6 @@ public class OScloseBlue extends NextFTCOpMode {
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
-
         FlyWheel.INSTANCE.off.schedule();
         buildPaths();
         follower().setStartingPose(startPose);
@@ -113,19 +138,18 @@ public class OScloseBlue extends NextFTCOpMode {
                 rightGateClose,
                 leftGateClose,
                 new SequentialGroup(
-                        new Delay(4),
                         new FollowPath(launchPath),
                         launchBall,
                         new Delay(.5),
                         runIntake,
                         theDownies, //Henry don't hate us please
                         rightGateOpen,
-                        new Delay(3),
+                        new Delay(2),
                         launchBall,
                         new Delay(.5),
                         theDownies, //Henry don't hate us please
                         leftGateOpen,
-                        new Delay(3),
+                        new Delay(2),
                         launchBall,
                         new Delay(.5),
                         theDownies, //Henry don't hate us please
@@ -134,18 +158,27 @@ public class OScloseBlue extends NextFTCOpMode {
                                 rightGateClose,
                                 leftGateClose
                         ),
-                        /*
-                        new FollowPath(pickUpBalls, true, .5),
+                        new FollowPath(pickUpBalls, true, .7),
                         new Delay(1),
                         new FollowPath(launchPath2),
+                        new Delay(.5),
                         launchBall,
                         new Delay(.5),
                         theDownies,
                         new Delay(2),
                         launchBall,
                         new Delay(.5),
-                        theDownies
-                         */
+                        theDownies,
+                        new FollowPath(pickUpBalls2, true, .7),
+                        new FollowPath(launchPath3),
+                        new Delay(.5),
+                        launchBall,
+                        new Delay(.5),
+                        theDownies,
+                        new Delay(2),
+                        launchBall,
+                        new Delay(.5),
+                        theDownies,
                         new FollowPath(parkPath)
                 )
         );
@@ -154,6 +187,11 @@ public class OScloseBlue extends NextFTCOpMode {
     @Override
     public void onStartButtonPressed() {
         autonomousRoutine().schedule();
+        //follower().followPath(launchPath);
+        //FlyWheel.INSTANCE.launchOn(1500);
+        //triggerServo.setPosition(.4);
+        //sleep(500);
+        //triggerServo.setPosition(.7);
     }
 
 

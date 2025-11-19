@@ -1,9 +1,9 @@
-package org.firstinspires.ftc.teamcode.auto;
+package org.firstinspires.ftc.teamcode.samples.autoSamples;
+import org.firstinspires.ftc.teamcode.subSystems.Turret;
+import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
 
-import org.firstinspires.ftc.teamcode.Turret;
-import org.firstinspires.ftc.teamcode.FlyWheel;
+
 import static java.lang.Math.abs;
-
 
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.delays.Delay;
@@ -23,8 +23,6 @@ import dev.nextftc.hardware.powerable.SetPower;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.Path;
-import com.pedropathing.paths.PathBuilder;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -36,9 +34,9 @@ import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
 import java.util.Timer;
 
-@Autonomous(name = "closeRed")
+@Autonomous(name = "closeBlue")
 
-public class closeRed extends NextFTCOpMode {
+public class closeBlue extends NextFTCOpMode {
     CRServoEx intake = new CRServoEx("intake");
     ServoEx leftRelease = new ServoEx("lbar");
     ServoEx rightRelease = new ServoEx("rbar");
@@ -52,24 +50,16 @@ public class closeRed extends NextFTCOpMode {
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
 
-    private final Pose startPose = new Pose(22, 123, Math.toRadians(144))
-            .mirror();
-    private final Pose launchPose = new Pose(37, 95, Math.toRadians(-45))
-            .mirror();
-    private final Pose parkPose = new Pose(37,120, Math.toRadians(180))
-            .mirror();
-    private final Pose launchPose2 = new Pose(34, 97, Math.toRadians(-45))
-            .mirror();
-    private final Pose pickUpPose = new Pose(46, 81, Math.toRadians(180))
-            .mirror();
-    private final Pose pickUp = new Pose(22, 81, Math.toRadians(180))
-            .mirror();
-    private final Pose pickUpPose2 = new Pose(44, 57, Math.toRadians(180))
-            .mirror();
-    private final Pose pickUp2 = new Pose(15, 57, Math.toRadians(180))
-            .mirror();
-    private final Pose midpoint = new Pose(30, 57, Math.toRadians(180))
-            .mirror();
+    private final Pose startPose = new Pose(22, 123, Math.toRadians(144));
+    private final Pose launchPose = new Pose(37, 95, Math.toRadians(-52));
+    private final Pose parkPose = new Pose(37,120, Math.toRadians(180));
+    private final Pose launchPose2 = new Pose(34, 97, Math.toRadians(-52));
+    private final Pose pickUpPose = new Pose(46, 81, Math.toRadians(180));
+    private final Pose pickUp = new Pose(22, 81, Math.toRadians(180));
+    private final Pose pickUpPose2 = new Pose(44, 57, Math.toRadians(180));
+    private final Pose pickUp2 = new Pose(16, 57, Math.toRadians(180));
+    private final Pose midpoint = new Pose(30, 57, Math.toRadians(180));
+
     public PathChain launchPath, parkPath, pickUpBalls, launchPath2, pickUpBalls2, launchPath3;
 
     public void buildPaths() {
@@ -114,7 +104,7 @@ public class closeRed extends NextFTCOpMode {
     public Command leftGateClose = new SetPosition(leftRelease, .3);
     public Command runIntake = new SetPower(intake, -1);
 
-    public closeRed() {
+    public closeBlue() {
         addComponents(
                 new SubsystemComponent(Turret.INSTANCE),
                 new SubsystemComponent(FlyWheel.INSTANCE),
@@ -129,6 +119,7 @@ public class closeRed extends NextFTCOpMode {
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
+
         FlyWheel.INSTANCE.off.schedule();
         buildPaths();
         follower().setStartingPose(startPose);
@@ -143,9 +134,9 @@ public class closeRed extends NextFTCOpMode {
                         new FollowPath(launchPath),
                         launchBall,
                         new Delay(.5),
-                        runIntake,
                         theDownies, //Henry don't hate us please
                         rightGateOpen,
+                        runIntake,
                         new Delay(2),
                         launchBall,
                         new Delay(.5),
@@ -189,11 +180,6 @@ public class closeRed extends NextFTCOpMode {
     @Override
     public void onStartButtonPressed() {
         autonomousRoutine().schedule();
-        //follower().followPath(launchPath);
-        //FlyWheel.INSTANCE.launchOn(1500);
-        //triggerServo.setPosition(.4);
-        //sleep(500);
-        //triggerServo.setPosition(.7);
     }
 
 

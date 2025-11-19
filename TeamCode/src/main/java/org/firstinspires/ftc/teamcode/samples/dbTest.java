@@ -1,19 +1,18 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.samples;
 
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-import dev.nextftc.core.components.*;
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
 
-import dev.nextftc.core.components.SubsystemComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
 
-
+@Disabled
 @Autonomous(name = "dbTest")
 public class dbTest extends NextFTCOpMode {
     Limelight3A limelight;

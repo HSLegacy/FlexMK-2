@@ -16,15 +16,7 @@ import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Constants {
-    public static FollowerConstants followerConstants = new FollowerConstants()
-        .mass(8.799692)
-        .forwardZeroPowerAcceleration(-44.584)
-        .lateralZeroPowerAcceleration(-66.0535)
-        .translationalPIDFCoefficients(new PIDFCoefficients(0.07, 0, 0.008, 0.025))
-        .headingPIDFCoefficients(new PIDFCoefficients(0.9, 0, 0.05, 0.025))
-        .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.015, 0, 0.000006, 1, 0.035))
-        .centripetalScaling(0.0005);
-
+    public static FollowerConstants followerConstants = new FollowerConstants();
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
@@ -36,9 +28,7 @@ public class Constants {
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .useBrakeModeInTeleOp(true)
-            .xVelocity(56.7638)
-            .yVelocity(46.2868);
+            .useBrakeModeInTeleOp(true);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(-5.5)

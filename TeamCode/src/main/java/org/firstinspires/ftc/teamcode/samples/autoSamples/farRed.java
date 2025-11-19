@@ -1,6 +1,6 @@
-package org.firstinspires.ftc.teamcode.auto;
-import org.firstinspires.ftc.teamcode.Turret;
-import org.firstinspires.ftc.teamcode.FlyWheel;
+package org.firstinspires.ftc.teamcode.samples.autoSamples;
+import org.firstinspires.ftc.teamcode.subSystems.Turret;
+import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
 
 import static java.lang.Math.abs;
 
@@ -22,8 +22,6 @@ import dev.nextftc.hardware.powerable.SetPower;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.Path;
-import com.pedropathing.paths.PathBuilder;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
