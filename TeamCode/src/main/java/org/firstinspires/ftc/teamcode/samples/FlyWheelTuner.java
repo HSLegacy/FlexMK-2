@@ -11,8 +11,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
 
-@Configurable
-@Disabled
 @TeleOp(name = "runFlyWheelPIDs")
 
 public class FlyWheelTuner extends NextFTCOpMode {

@@ -76,26 +76,20 @@ public class Turret implements Subsystem {
 
     }
 
-    public Map<String, Double> LLStateMachine(Limelight3A limelight){
+    public int getIndex(Limelight3A limelight){
        LLResult result = limelight.getLatestResult();
        Map<String, Double> Data = null;
 
-
             if (result != null) {
-
-
-                if (result.isValid()) {
                     List<LLResultTypes.FiducialResult> feducialResults =  result.getFiducialResults();
                     //telemetry.addData("Tx:", feducialResults.get(0).getTargetXDegrees());
+                if (result.isValid()) {
                     for(LLResultTypes.FiducialResult tag : feducialResults){
-                        switch(tag.getFiducialId()){
-                            case 20:
-                                Data.put("Pattern", 101);
-
-                        };
+                       return tag.getFiducialId();
                     }
                 }
             }
+            return 0;
     }
     public void setYLinear(double ty){
         double encoderClicksPerRev = 1440d / 360d;

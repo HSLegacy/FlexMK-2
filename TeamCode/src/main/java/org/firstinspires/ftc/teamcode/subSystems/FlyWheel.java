@@ -17,7 +17,8 @@ import dev.nextftc.core.subsystems.Subsystem;
 import dev.nextftc.hardware.controllable.RunToVelocity;
 import dev.nextftc.hardware.impl.MotorEx;
 
-@Configurable
+
+
 public class FlyWheel implements Subsystem {
 
     public static final FlyWheel INSTANCE = new FlyWheel();
@@ -32,7 +33,7 @@ public class FlyWheel implements Subsystem {
 
     public double goal = 1100;
     private ControlSystem FlyWheelControl = ControlSystem.builder()
-            .velPid(0.008,0.0,0.001) //.008 0 0.002
+            .velPid(FlyWheelConstants.P,FlyWheelConstants.I,FlyWheelConstants.D) //.008 0 0.002
             .elevatorFF(0.03)
             .build();
 
