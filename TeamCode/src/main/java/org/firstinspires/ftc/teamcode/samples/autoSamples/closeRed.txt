@@ -35,7 +35,6 @@ import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 import java.util.Timer;
 
 @Autonomous(name = "closeRed")
-
 public class closeRed extends NextFTCOpMode {
     CRServoEx intake = new CRServoEx("intake");
     ServoEx leftRelease = new ServoEx("lbar");

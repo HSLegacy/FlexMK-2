@@ -17,7 +17,7 @@ import java.util.function.Function;
 @Configurable
 public class FlyWheelConstants{
 
-    public static double P = 0.0d;
+    public static double P = 0.1d;
     public static double I = 0.0d;
     public static double D = 0.0d;
 
