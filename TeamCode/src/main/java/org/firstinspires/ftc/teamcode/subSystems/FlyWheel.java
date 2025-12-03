@@ -44,7 +44,6 @@ public class FlyWheel implements Subsystem {
 
     @Override
     public void initialize() {
-
     }
 
     @Override

@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
+import org.firstinspires.ftc.teamcode.subSystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subSystems.Turret;
 
 import java.util.List;
@@ -41,6 +42,11 @@ public class NewTeleop extends NextFTCOpMode {
     LLResultTypes.FiducialResult lastResult = null;
 
     boolean running = true;
+    public int x = 0;
+    public int y = 0;
+
+    Button intakePosButton = button(() -> gamepad1.dpad_right);
+    Button outakePosButton = button(() -> gamepad1.dpad_left);
 
 
     DriverControlledCommand driverControlled = new PedroDriverControlled(
@@ -54,10 +60,10 @@ public class NewTeleop extends NextFTCOpMode {
     public NewTeleop() {
         addComponents(
                 new PedroComponent(Constants::createFollower),
+                new SubsystemComponent(Spindexer.INSTANCE),
                 new SubsystemComponent(FlyWheel.INSTANCE),
                 BulkReadComponent.INSTANCE,
                 BindingsComponent.INSTANCE
-
         );
     }
 
@@ -66,6 +72,8 @@ public class NewTeleop extends NextFTCOpMode {
     public void onStartButtonPressed() {
         driverControlled.schedule();
 
+        intakePosButton.whenBecomesTrue(() -> switchIntakePos());
+        outakePosButton.whenBecomesTrue(() -> switchOuttakePos());
         button(() -> gamepad1.b)
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> runFlyWheel())
@@ -87,6 +95,9 @@ public class NewTeleop extends NextFTCOpMode {
     @Override
     public void onUpdate() {
        BindingManager.update();
+       telemetry.addData("spindexer Pos", Spindexer.INSTANCE.spindexer.getState().toString());
+       telemetry.addData("x number", x);
+       telemetry.update();
     }
 
     public static Limelight3A limelight = null;
@@ -113,4 +124,31 @@ public class NewTeleop extends NextFTCOpMode {
         return null;
     }
 
+    Runnable switchIntakePos(){
+        if (x == 0){
+            Spindexer.INSTANCE.intakePos1.schedule();
+            x = 1;
+        } else if (x == 1){
+            Spindexer.INSTANCE.intakePos2.schedule();
+            x = 2;
+        } else if (x ==2){
+            Spindexer.INSTANCE.intakePos3.schedule();
+            x = 0;
+        }
+        return null;
+    }
+
+    Runnable switchOuttakePos(){
+        if (y == 0){
+            Spindexer.INSTANCE.outakePos1.schedule();
+            y = 1;
+        } else if (y == 1){
+            Spindexer.INSTANCE.outakePos2.schedule();
+            y = 2;
+        } else if (y ==2){
+            Spindexer.INSTANCE.outakePos3.schedule();
+            y = 0;
+        }
+        return null;
+    }
 }
