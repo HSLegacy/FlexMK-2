@@ -44,9 +44,10 @@ public class NewTeleop extends NextFTCOpMode {
     boolean running = true;
     public int x = 0;
     public int y = 0;
+    public boolean z = false;
 
-    Button intakePosButton = button(() -> gamepad1.dpad_right);
-    Button outakePosButton = button(() -> gamepad1.dpad_left);
+    Button intakePosButton = button(() -> gamepad1.dpad_left);
+    Button outakePosButton = button(() -> gamepad1.dpad_right);
 
 
     DriverControlledCommand driverControlled = new PedroDriverControlled(
@@ -81,23 +82,37 @@ public class NewTeleop extends NextFTCOpMode {
 
         button(() -> gamepad1.left_bumper)
                 .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> intake.setPower(-1))
+                .whenBecomesTrue(() -> intake.setPower(1))
                 .whenBecomesFalse(() -> intake.setPower(0));
 
         button(() -> gamepad1.right_bumper)
                 .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> lUptake.setPower(-1))
-                .whenBecomesTrue(() -> rUptake.setPower(1))
-                .whenBecomesFalse(() -> lUptake.setPower(0))
-                .whenBecomesFalse(() -> rUptake.setPower(0));
+                .whenBecomesTrue(() -> Uptake())
+                .whenBecomesFalse(() -> UptakeOff());
     }
 
     @Override
     public void onUpdate() {
        BindingManager.update();
        telemetry.addData("spindexer Pos", Spindexer.INSTANCE.spindexer.getState().toString());
+        telemetry.addData("spindexer Foal", Spindexer.INSTANCE.spindexerControl.getGoal().getPosition());
        telemetry.addData("x number", x);
        telemetry.update();
+
+        if(Spindexer.INSTANCE.spindexer.getCurrentPosition() > Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() + 10){
+            rUptake.setPower(1);
+            lUptake.setPower(1);
+            z = false;
+        } else if(Spindexer.INSTANCE.spindexer.getCurrentPosition() < Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() - 10){
+            rUptake.setPower(-1);
+            lUptake.setPower(-1);
+            z = false;
+        }else{
+            if (z == false){
+            rUptake.setPower(0);
+            lUptake.setPower(0);}
+        }
+
     }
 
     public static Limelight3A limelight = null;
@@ -121,6 +136,18 @@ public class NewTeleop extends NextFTCOpMode {
     }
     Runnable stopFlyWheel(){
         FlyWheel.INSTANCE.off.schedule();
+        return null;
+    }
+    Runnable Uptake(){
+        lUptake.setPower(-1);
+        rUptake.setPower(1);
+        z = true;
+        return null;
+    }
+    Runnable UptakeOff(){
+        lUptake.setPower(0);
+        rUptake.setPower(0);
+        z = false;
         return null;
     }
 

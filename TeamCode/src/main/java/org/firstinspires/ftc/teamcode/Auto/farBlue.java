@@ -1,13 +1,16 @@
 package org.firstinspires.ftc.teamcode.Auto;
+import org.firstinspires.ftc.teamcode.subSystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subSystems.Turret;
 import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
 
 import static java.lang.Math.abs;
 
 import dev.nextftc.core.commands.Command;
+import dev.nextftc.core.commands.conditionals.IfElseCommand;
 import dev.nextftc.core.commands.delays.Delay;
 import dev.nextftc.core.commands.groups.ParallelGroup;
 import dev.nextftc.core.commands.groups.SequentialGroup;
+import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.components.SubsystemComponent;
 import dev.nextftc.extensions.pedro.FollowPath;
 import dev.nextftc.extensions.pedro.PedroComponent;
@@ -47,11 +50,11 @@ public class farBlue extends NextFTCOpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-
+    private int lastIndex = 0;
     private final Pose startPose = new Pose(52, 9, Math.toRadians(90));
     private final Pose fowardPose = new Pose(52, 75, Math.toRadians(90));
     private final Pose launchPose = new Pose(54, 85, Math.toRadians(128));
-    private final Pose parkPose = new Pose(45,70, Math.toRadians(180));
+    private final Pose parkPose = new Pose(45, 70, Math.toRadians(180));
 
     public PathChain driveForward, launchPath, parkPath;
 
@@ -70,12 +73,59 @@ public class farBlue extends NextFTCOpMode {
                 .setLinearHeadingInterpolation(launchPose.getHeading(), parkPose.getHeading())
                 .build();
     }
-
-    public Command runIntake = new SetPower(intake, -1);
     public ParallelGroup runUptake = new ParallelGroup(new SetPower(lUptake, -1), new SetPower(rUptake, 1));
+    public Command runIntake = new SetPower(intake, -1);
+    public Command shoot = new LambdaCommand()
+            .setStart(() -> {
+                telemetry.addData("started", "it defeninitlky did the thing");
+                if (lastIndex == 21){
+                    telemetry.addData("21", "21 workeeded");
+                    Spindexer.INSTANCE.outakePos2.schedule();
+                }
+                if (lastIndex == 22){
+                    Spindexer.INSTANCE.outakePos1.schedule();
+                    new Delay(1);
+                    lUptake.setPower(-1);
+                    rUptake.setPower(1);
+                    new Delay(2);
+                    Spindexer.INSTANCE.outakePos2.schedule();
+                    new Delay(1);
+                    lUptake.setPower(-1);
+                    rUptake.setPower(1);
+                    new Delay(2);
+                    Spindexer.INSTANCE.outakePos3.schedule();
+                    new Delay(1);
+                    lUptake.setPower(-1);
+                    rUptake.setPower(1);
+                    new Delay(2);
+                    lUptake.setPower(0);
+                    rUptake.setPower(0);
+                }
+                if (lastIndex == 23){
+                    Spindexer.INSTANCE.outakePos3.schedule();
+                    new Delay(1);
+                    lUptake.setPower(-1);
+                    rUptake.setPower(1);
+                    new Delay(2);
+                    Spindexer.INSTANCE.outakePos1.schedule();
+                    new Delay(1);
+                    lUptake.setPower(-1);
+                    rUptake.setPower(1);
+                    new Delay(2);
+                    Spindexer.INSTANCE.outakePos2.schedule();
+                    new Delay(1);
+                    lUptake.setPower(-1);
+                    rUptake.setPower(1);
+                    new Delay(2);
+                    lUptake.setPower(0);
+                    rUptake.setPower(0);
+                }
+            });
+
 
     public farBlue() {
         addComponents(
+                new SubsystemComponent(Spindexer.INSTANCE),
                 new SubsystemComponent(Turret.INSTANCE),
                 new SubsystemComponent(FlyWheel.INSTANCE),
                 new PedroComponent(Constants::createFollower),
@@ -100,8 +150,8 @@ public class farBlue extends NextFTCOpMode {
                 new SequentialGroup(
                         new FollowPath(driveForward),
                         new FollowPath(launchPath),
+                        shoot,
                         new Delay(2),
-                        runUptake,
                         new Delay(2),
                         new FollowPath(parkPath)
                 )
@@ -115,7 +165,11 @@ public class farBlue extends NextFTCOpMode {
 
     @Override
     public void onUpdate() {
-
+        if (Turret.INSTANCE.getIndex(limelight) != 0 && Turret.INSTANCE.getIndex(limelight) != 20 && lastIndex == 0 && Turret.INSTANCE.getIndex(limelight) != 24) {
+            lastIndex = Turret.INSTANCE.getIndex(limelight);
+            telemetry.addData("index", lastIndex);
+        }
+        telemetry.update();
     }
 
     public static Limelight3A limelight = null;
@@ -124,6 +178,7 @@ public class farBlue extends NextFTCOpMode {
     public void onStop() {
 
     }
+
 
 
 }
