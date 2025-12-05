@@ -53,7 +53,7 @@ public class farBlue extends NextFTCOpMode {
     private int lastIndex = 0;
     private final Pose startPose = new Pose(52, 9, Math.toRadians(90));
     private final Pose fowardPose = new Pose(52, 75, Math.toRadians(90));
-    private final Pose launchPose = new Pose(54, 85, Math.toRadians(128));
+    private final Pose launchPose = new Pose(54, 85, Math.toRadians(132));
     private final Pose parkPose = new Pose(45, 70, Math.toRadians(180));
 
     public PathChain driveForward, launchPath, parkPath;
@@ -74,51 +74,53 @@ public class farBlue extends NextFTCOpMode {
                 .build();
     }
     public ParallelGroup runUptake = new ParallelGroup(new SetPower(lUptake, -1), new SetPower(rUptake, 1));
+    public ParallelGroup stopUptake = new ParallelGroup(new SetPower(lUptake, 0), new SetPower(rUptake, 0));
     public Command runIntake = new SetPower(intake, -1);
-    public Command shoot = new LambdaCommand()
+    public Command shoot1 = new LambdaCommand()
             .setStart(() -> {
                 telemetry.addData("started", "it defeninitlky did the thing");
                 if (lastIndex == 21){
                     telemetry.addData("21", "21 workeeded");
                     Spindexer.INSTANCE.outakePos2.schedule();
                 }
-                if (lastIndex == 22){
+                else if (lastIndex == 22){
                     Spindexer.INSTANCE.outakePos1.schedule();
-                    new Delay(1);
-                    lUptake.setPower(-1);
-                    rUptake.setPower(1);
-                    new Delay(2);
-                    Spindexer.INSTANCE.outakePos2.schedule();
-                    new Delay(1);
-                    lUptake.setPower(-1);
-                    rUptake.setPower(1);
-                    new Delay(2);
-                    Spindexer.INSTANCE.outakePos3.schedule();
-                    new Delay(1);
-                    lUptake.setPower(-1);
-                    rUptake.setPower(1);
-                    new Delay(2);
-                    lUptake.setPower(0);
-                    rUptake.setPower(0);
                 }
-                if (lastIndex == 23){
-                    Spindexer.INSTANCE.outakePos3.schedule();
-                    new Delay(1);
-                    lUptake.setPower(-1);
-                    rUptake.setPower(1);
-                    new Delay(2);
+                else if (lastIndex == 23){
                     Spindexer.INSTANCE.outakePos1.schedule();
-                    new Delay(1);
-                    lUptake.setPower(-1);
-                    rUptake.setPower(1);
-                    new Delay(2);
+                }
+                else {
                     Spindexer.INSTANCE.outakePos2.schedule();
-                    new Delay(1);
-                    lUptake.setPower(-1);
-                    rUptake.setPower(1);
-                    new Delay(2);
-                    lUptake.setPower(0);
-                    rUptake.setPower(0);
+                }
+            });
+    public Command shoot2 = new LambdaCommand()
+            .setStart(() -> {
+                if (lastIndex == 21){
+                    Spindexer.INSTANCE.outakePos1.schedule();
+                }
+                else if (lastIndex == 22){
+                    Spindexer.INSTANCE.outakePos2.schedule();
+                }
+                else if (lastIndex == 23){
+                    Spindexer.INSTANCE.outakePos3.schedule();
+                }
+                else {
+                    Spindexer.INSTANCE.outakePos1.schedule();
+                }
+            });
+    public Command shoot3 = new LambdaCommand()
+            .setStart(() -> {
+                if (lastIndex == 21){
+                    Spindexer.INSTANCE.autoOutakePos4.schedule();
+                }
+                else if(lastIndex == 22){
+                    Spindexer.INSTANCE.outakePos3.schedule();
+                }
+                else if (lastIndex == 23){
+                    Spindexer.INSTANCE.outakePos2.schedule();
+                }
+                else {
+                    Spindexer.INSTANCE.outakePos3.schedule();
                 }
             });
 
@@ -150,9 +152,20 @@ public class farBlue extends NextFTCOpMode {
                 new SequentialGroup(
                         new FollowPath(driveForward),
                         new FollowPath(launchPath),
-                        shoot,
+                        runIntake,
+                        shoot1,
+                        new Delay(1),
+                        runUptake,
                         new Delay(2),
+                        shoot2,
+                        new Delay(1),
+                        runUptake,
                         new Delay(2),
+                        shoot3,
+                        new Delay(1),
+                        runUptake,
+                        new Delay(2),
+                        stopUptake,
                         new FollowPath(parkPath)
                 )
         );
@@ -165,7 +178,7 @@ public class farBlue extends NextFTCOpMode {
 
     @Override
     public void onUpdate() {
-        if (Turret.INSTANCE.getIndex(limelight) != 0 && Turret.INSTANCE.getIndex(limelight) != 20 && lastIndex == 0 && Turret.INSTANCE.getIndex(limelight) != 24) {
+        if (Turret.INSTANCE.getIndex(limelight) != 0 && Turret.INSTANCE.getIndex(limelight) != 20 && Turret.INSTANCE.getIndex(limelight) != 24 && lastIndex == 0 && Turret.INSTANCE.getIndex(limelight) != 24) {
             lastIndex = Turret.INSTANCE.getIndex(limelight);
             telemetry.addData("index", lastIndex);
         }

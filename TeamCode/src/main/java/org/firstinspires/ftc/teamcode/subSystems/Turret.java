@@ -104,6 +104,5 @@ public class Turret implements Subsystem {
     }
     @Override
     public void periodic() {
-
     }
 }

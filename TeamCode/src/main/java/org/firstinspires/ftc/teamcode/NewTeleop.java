@@ -45,6 +45,7 @@ public class NewTeleop extends NextFTCOpMode {
     public int x = 0;
     public int y = 0;
     public boolean z = false;
+    private boolean toggleLock = false;
 
     Button intakePosButton = button(() -> gamepad1.dpad_left);
     Button outakePosButton = button(() -> gamepad1.dpad_right);
@@ -82,13 +83,17 @@ public class NewTeleop extends NextFTCOpMode {
 
         button(() -> gamepad1.left_bumper)
                 .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> intake.setPower(1))
+                .whenBecomesTrue(() -> intake.setPower(-1))
                 .whenBecomesFalse(() -> intake.setPower(0));
 
         button(() -> gamepad1.right_bumper)
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> Uptake())
                 .whenBecomesFalse(() -> UptakeOff());
+        button(() -> gamepad1.y)
+                .toggleOnBecomesTrue()
+                .whenBecomesTrue(() -> toggleLock = true)
+                .whenBecomesFalse(() -> toggleLock = true);
     }
 
     @Override
@@ -112,6 +117,8 @@ public class NewTeleop extends NextFTCOpMode {
             rUptake.setPower(0);
             lUptake.setPower(0);}
         }
+        if(toggleLock)
+            Turret.INSTANCE.lockOn(limelight);
 
     }
 

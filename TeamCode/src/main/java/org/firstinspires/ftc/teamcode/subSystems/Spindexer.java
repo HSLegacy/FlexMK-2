@@ -45,7 +45,7 @@ public class Spindexer implements Subsystem {
     public final Command outakePos1 = new RunToPosition(spindexerControl, 89).requires(this).named("outtakePos1"); //fire intakePos1
     public final Command outakePos2 = new RunToPosition(spindexerControl, 267).requires(this).named("outtakePos2");
     public final Command outakePos3 = new RunToPosition(spindexerControl, 439).requires(this).named("outtakePos3");
-
+    public final Command autoOutakePos4 = new RunToPosition(spindexerControl, -85).requires(this).named("outtakePos3");
     private boolean isStarted = false;
 
     @Override
