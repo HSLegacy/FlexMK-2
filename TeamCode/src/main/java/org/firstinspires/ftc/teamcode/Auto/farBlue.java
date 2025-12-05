@@ -30,6 +30,7 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
@@ -120,7 +121,7 @@ public class farBlue extends NextFTCOpMode {
                     Spindexer.INSTANCE.outakePos2.schedule();
                 }
                 else {
-                    Spindexer.INSTANCE.outakePos3.schedule();
+                    Spindexer.INSTANCE.autoOutakePos4.schedule();
                 }
             });
 
@@ -143,6 +144,8 @@ public class farBlue extends NextFTCOpMode {
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
         FlyWheel.INSTANCE.off.schedule();
         buildPaths();
+        Spindexer.INSTANCE.intakePos1.schedule();
+        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         follower().setStartingPose(startPose);
     }
 

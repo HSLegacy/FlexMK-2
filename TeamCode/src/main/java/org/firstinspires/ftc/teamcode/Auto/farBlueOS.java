@@ -38,9 +38,9 @@ import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
 import java.util.Timer;
 
-@Autonomous(name = "farRed")
+@Autonomous(name = "farBlueOS")
 
-public class farRed extends NextFTCOpMode {
+public class farBlueOS extends NextFTCOpMode {
 
     CRServoEx intake = new CRServoEx("intake");
     CRServoEx lUptake = new CRServoEx("lUptake");
@@ -52,26 +52,17 @@ public class farRed extends NextFTCOpMode {
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
     private int lastIndex = 0;
-    private final Pose startPose = new Pose(52, 9, Math.toRadians(90))
-            .mirror();
-    private final Pose fowardPose = new Pose(52, 75, Math.toRadians(90))
-            .mirror();
-    private final Pose launchPose = new Pose(54, 85, Math.toRadians(132))
-            .mirror();
-    private final Pose parkPose = new Pose(45, 70, Math.toRadians(180))
-            .mirror();
+    private final Pose startPose = new Pose(52, 9, Math.toRadians(90));
+    private final Pose launchPose = new Pose(52, 15, Math.toRadians(113));
+    private final Pose parkPose = new Pose(38, 15, Math.toRadians(90));
 
-    public PathChain driveForward, launchPath, parkPath;
+    public PathChain launchPath, parkPath;
 
     public void buildPaths() {
 
-        driveForward = follower().pathBuilder()
-                .addPath(new BezierLine(startPose, fowardPose))
-                .setLinearHeadingInterpolation(startPose.getHeading(), fowardPose.getHeading())
-                .build();
         launchPath = follower().pathBuilder()
-                .addPath(new BezierLine(fowardPose, launchPose))
-                .setLinearHeadingInterpolation(fowardPose.getHeading(), launchPose.getHeading())
+                .addPath(new BezierLine(startPose, launchPose))
+                .setLinearHeadingInterpolation(startPose.getHeading(), launchPose.getHeading())
                 .build();
         parkPath = follower().pathBuilder()
                 .addPath(new BezierLine(launchPose, parkPose))
@@ -130,7 +121,7 @@ public class farRed extends NextFTCOpMode {
             });
 
 
-    public farRed() {
+    public farBlueOS() {
         addComponents(
                 new SubsystemComponent(Spindexer.INSTANCE),
                 new SubsystemComponent(Turret.INSTANCE),
@@ -155,9 +146,8 @@ public class farRed extends NextFTCOpMode {
 
     private Command autonomousRoutine() {
         return new ParallelGroup(
-                FlyWheel.INSTANCE.on,
+                FlyWheel.INSTANCE.onAuto,
                 new SequentialGroup(
-                        new FollowPath(driveForward),
                         new FollowPath(launchPath),
                         runIntake,
                         shoot1,
