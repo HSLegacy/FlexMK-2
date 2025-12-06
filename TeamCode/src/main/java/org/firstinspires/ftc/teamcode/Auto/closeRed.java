@@ -60,10 +60,18 @@ public class closeRed extends NextFTCOpMode {
             .mirror();
     private final Pose launchPose = new Pose(60, 85, Math.toRadians(132))
             .mirror();
+    private final Pose pickUp1 = new Pose(37.3, 85.5, Math.toRadians(180))
+            .mirror();
+    private final Pose pickUp2 = new Pose(29.5, 85.5, Math.toRadians(180))
+            .mirror();
+    private final Pose pickUp3 = new Pose(15, 87, Math.toRadians(180))
+            .mirror();
+    private final Pose launchPose2 = new Pose(60, 85, Math.toRadians(142))
+            .mirror();
     private final Pose parkPose = new Pose(55,130, Math.toRadians(180))
             .mirror();
 
-    public PathChain cameraPath, launchPath, parkPath;
+    public PathChain cameraPath, launchPath, pickPath1, pickPath2, pickPath3, launchPath2, parkPath;
 
     public void buildPaths() {
         cameraPath = follower().pathBuilder()
@@ -73,6 +81,26 @@ public class closeRed extends NextFTCOpMode {
         launchPath = follower().pathBuilder()
                 .addPath(new BezierLine(cameraPose, launchPose))
                 .setLinearHeadingInterpolation(cameraPose.getHeading(), launchPose.getHeading())
+                .build();
+        pickPath1 = follower().pathBuilder()
+                .addPath(new BezierLine(launchPose, pickUp1))
+                .setBrakingStrength(.2)
+                .setLinearHeadingInterpolation(launchPose.getHeading(), pickUp1.getHeading())
+                .build();
+        pickPath2 = follower().pathBuilder()
+                .addPath(new BezierLine(pickUp1, pickUp2))
+                .setLinearHeadingInterpolation(pickUp1.getHeading(), pickUp2.getHeading())
+                .setBrakingStrength(.2)
+                .build();
+        pickPath3 = follower().pathBuilder()
+                .addPath(new BezierLine(pickUp2, pickUp3))
+                .setLinearHeadingInterpolation(pickUp2.getHeading(), pickUp3.getHeading())
+                .setBrakingStrength(.5)
+                .build();
+        launchPath2 = follower().pathBuilder()
+                .addPath(new BezierLine(pickUp3, launchPose2))
+                .setLinearHeadingInterpolation(pickUp3.getHeading(), launchPose2.getHeading())
+                .setBrakingStrength(1)
                 .build();
         parkPath = follower().pathBuilder()
                 .addPath(new BezierLine(launchPose, parkPose))
@@ -130,6 +158,18 @@ public class closeRed extends NextFTCOpMode {
                     Spindexer.INSTANCE.autoOutakePos4.schedule();
                 }
             });
+    public Command pos1 = new LambdaCommand()
+            .setStart(() -> {
+                Spindexer.INSTANCE.autoIntakePos4.schedule();
+            });
+    public Command pos2 = new LambdaCommand()
+            .setStart(() -> {
+                Spindexer.INSTANCE.intakePos2.schedule();
+            });
+    public Command pos3 = new LambdaCommand()
+            .setStart(() -> {
+                Spindexer.INSTANCE.intakePos3.schedule();
+            });
 
     public Command findIndex = new LambdaCommand()
             .setStart(() -> {
@@ -168,19 +208,41 @@ public class closeRed extends NextFTCOpMode {
                 new SequentialGroup(
                         new FollowPath(cameraPath),
                         findIndex,
-                        new Delay(2),
                         new FollowPath(launchPath),
                         runIntake,
                         shoot1,
-                        new Delay(1),
+                        new Delay(.3),
                         runUptake,
                         new Delay(2),
                         shoot2,
-                        new Delay(1),
+                        new Delay(.3),
                         runUptake,
                         new Delay(2),
                         shoot3,
-                        new Delay(1),
+                        new Delay(.3),
+                        runUptake,
+                        new Delay(2),
+                        stopUptake,
+                        pos3,
+                        new FollowPath(pickPath1, false, .5),
+                        new Delay(.6),
+                        pos2,
+                        new FollowPath(pickPath2, false, .3),
+                        new Delay(.6),
+                        pos1,
+                        new FollowPath(pickPath3, false, .5),
+                        new Delay(.8),
+                        new FollowPath(launchPath2),
+                        shoot1,
+                        new Delay(.3),
+                        runUptake,
+                        new Delay(2),
+                        shoot2,
+                        new Delay(.3),
+                        runUptake,
+                        new Delay(2),
+                        shoot3,
+                        new Delay(.3),
                         runUptake,
                         new Delay(2),
                         stopUptake,

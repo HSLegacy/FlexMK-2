@@ -1,26 +1,28 @@
 package org.firstinspires.ftc.teamcode;
 
-import static java.lang.Math.abs;
 import static dev.nextftc.bindings.Bindings.button;
-import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
-import com.pedropathing.geometry.Pose;
-import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
 import org.firstinspires.ftc.teamcode.subSystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subSystems.Turret;
 
-import java.util.List;
-
 import dev.nextftc.bindings.BindingManager;
 import dev.nextftc.bindings.Button;
+import dev.nextftc.control.KineticState;
+import dev.nextftc.core.commands.Command;
+import dev.nextftc.core.commands.delays.Delay;
+import dev.nextftc.core.commands.groups.ParallelGroup;
+import dev.nextftc.core.commands.groups.SequentialGroup;
+import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.core.components.SubsystemComponent;
+import dev.nextftc.extensions.pedro.FollowPath;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.extensions.pedro.PedroDriverControlled;
 import dev.nextftc.ftc.Gamepads;
@@ -28,12 +30,11 @@ import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 import dev.nextftc.hardware.driving.DriverControlledCommand;
 import dev.nextftc.hardware.impl.CRServoEx;
-import dev.nextftc.hardware.impl.MotorEx;
-import dev.nextftc.hardware.impl.ServoEx;
+import dev.nextftc.hardware.powerable.SetPower;
 
-@TeleOp(name = "NewTeleOp")
+@TeleOp(name = "NewTeleOpTwoControllers")
 
-public class NewTeleop extends NextFTCOpMode {
+public class NewTeleopTwoControllers extends NextFTCOpMode {
 
     CRServoEx intake = new CRServoEx("intake");
     CRServoEx rUptake = new CRServoEx("rUptake");
@@ -42,13 +43,17 @@ public class NewTeleop extends NextFTCOpMode {
     LLResultTypes.FiducialResult lastResult = null;
 
     boolean running = true;
+    double currentPose = 0;
     public int x = 0;
     public int y = 0;
     public boolean z = false;
     private boolean toggleLock = false;
 
-    Button intakePosButton = button(() -> gamepad1.dpad_left);
-    Button outakePosButton = button(() -> gamepad1.dpad_right);
+    Button intakePosButton = button(() -> gamepad2.dpad_left);
+    Button outakePosButton = button(() -> gamepad2.dpad_right);
+    Button shootMacro = button(() -> gamepad2.left_bumper);
+    Button offsetSpin = button(() -> gamepad2.x);
+    Button offsetReset = button(() -> gamepad2.a);
 
 
     DriverControlledCommand driverControlled = new PedroDriverControlled(
@@ -59,7 +64,7 @@ public class NewTeleop extends NextFTCOpMode {
     );
 
 
-    public NewTeleop() {
+    public NewTeleopTwoControllers() {
         addComponents(
                 new PedroComponent(Constants::createFollower),
                 new SubsystemComponent(Spindexer.INSTANCE),
@@ -75,6 +80,9 @@ public class NewTeleop extends NextFTCOpMode {
         driverControlled.schedule();
 
         intakePosButton.whenBecomesTrue(() -> switchIntakePos());
+        offsetSpin.whenBecomesTrue(() -> offset());
+        offsetReset.whenBecomesTrue(() -> twooffset());
+        shootMacro.whenBecomesTrue(() -> shoot3().schedule());
         outakePosButton.whenBecomesTrue(() -> switchOuttakePos());
         button(() -> gamepad1.b)
                 .toggleOnBecomesTrue()
@@ -88,12 +96,18 @@ public class NewTeleop extends NextFTCOpMode {
 
         button(() -> gamepad1.right_bumper)
                 .toggleOnBecomesTrue()
+                .whenBecomesTrue(() -> intake.setPower(1))
+                .whenBecomesFalse(() -> intake.setPower(0));
+
+        button(() -> gamepad2.right_bumper)
+                .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> Uptake())
                 .whenBecomesFalse(() -> UptakeOff());
+
         button(() -> gamepad1.y)
                 .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> toggleLock = true)
-                .whenBecomesFalse(() -> toggleLock = true);
+                .whenBecomesTrue(() -> Turret.INSTANCE.varSwitch1())
+                .whenBecomesFalse(() -> Turret.INSTANCE.varSwitch2());
     }
 
     @Override
@@ -104,11 +118,11 @@ public class NewTeleop extends NextFTCOpMode {
         telemetry.addData("x number", x);
         telemetry.update();
 
-        if (Spindexer.INSTANCE.spindexer.getCurrentPosition() > Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() + 10) {
+        if (Spindexer.INSTANCE.spindexer.getCurrentPosition() > Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() + 15) {
             rUptake.setPower(1);
             lUptake.setPower(1);
             z = false;
-        } else if (Spindexer.INSTANCE.spindexer.getCurrentPosition() < Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() - 10) {
+        } else if (Spindexer.INSTANCE.spindexer.getCurrentPosition() < Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() - 15) {
             rUptake.setPower(-1);
             lUptake.setPower(-1);
             z = false;
@@ -118,7 +132,7 @@ public class NewTeleop extends NextFTCOpMode {
                 lUptake.setPower(0);
             }
         }
-        Turret.INSTANCE.lockOn(limelight);
+        //Turret.INSTANCE.lockOn(limelight);
     }
 
     public static Limelight3A limelight = null;
@@ -144,6 +158,47 @@ public class NewTeleop extends NextFTCOpMode {
         FlyWheel.INSTANCE.off.schedule();
         return null;
     }
+
+
+    private Command offset() {
+        Spindexer.INSTANCE.intakePos1.schedule();
+        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        return null;
+
+    }
+    private Command twooffset() {
+        Spindexer.INSTANCE.telopOffset.schedule();
+
+        return null;
+
+    }
+
+    private SequentialGroup shoot3() {
+        return new SequentialGroup(
+                Spindexer.INSTANCE.outakePos1,
+                new Delay(.5),
+                runUptake,
+                new Delay(2),
+                Spindexer.INSTANCE.outakePos2,
+                new Delay(.5),
+                runUptake,
+                new Delay(2),
+                Spindexer.INSTANCE.outakePos3,
+                new Delay(.5),
+                runUptake
+        );
+
+
+    }
+
+    Runnable offset2(){
+        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //Spindexer.INSTANCE.spindexerControl.setLastMeasurement(new KineticState(currentPose, Spindexer.INSTANCE.spindexerControl.getLastMeasurement().getVelocity(), Spindexer.INSTANCE.spindexerControl.getLastMeasurement().getAcceleration()));
+        return null;
+    }
+
+    public ParallelGroup runUptake = new ParallelGroup(new SetPower(lUptake, -1), new SetPower(rUptake, 1));
     Runnable Uptake(){
         lUptake.setPower(-1);
         rUptake.setPower(1);

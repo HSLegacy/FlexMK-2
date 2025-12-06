@@ -38,7 +38,7 @@ import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
 import java.util.Timer;
 
-@Autonomous(name = "farBlueOS")
+@Autonomous(name = "farRedOS")
 
 public class farRedOS extends NextFTCOpMode {
 
