@@ -45,6 +45,7 @@ public class FlyWheel implements Subsystem {
 
     @Override
     public void initialize() {
+        FlyWheelControl.setGoal(new KineticState(FlyWheel.INSTANCE.leftFlyWheel.getCurrentPosition(), 0));
     }
 
     @Override

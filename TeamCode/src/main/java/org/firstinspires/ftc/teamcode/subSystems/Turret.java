@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class Turret implements Subsystem {
     public static final Turret INSTANCE = new Turret();
-    boolean switcher = false;
+    boolean lockedOn = false;
     private Turret() { }
 
     private MotorEx yLinear = new MotorEx("ylinear");
@@ -37,18 +37,18 @@ public class Turret implements Subsystem {
             .posPid(0.004, 0.0, 0.0001)
             .elevatorFF(0)
             .build();
-    public void varSwitch1(){
-        switcher = true;
+    public void lockOn(){
+        lockedOn = true;
     }
-    public void varSwitch2(){
-        switcher = false;
+    public void lockOff(){
+        lockedOn = false;
     }
-    public void lockOn(Limelight3A limelight){
+    public void lockOnUpdate(Limelight3A limelight){
 
             LLResult result = limelight.getLatestResult();
 
 
-            if (result != null && switcher == true) {
+            if (result != null && lockedOn == true) {
 
 
                 if (result.isValid()) {
@@ -57,17 +57,12 @@ public class Turret implements Subsystem {
                     lastResult = feducialResults.get(0);
 
                     if (lastResult != null){
-                        if(lastResult.getTargetXDegrees() < -2 && switcher){
+                        if(lastResult.getTargetXDegrees() < -2 && lockedOn){
                             follower().turnDegrees(Math.abs(lastResult.getTargetXDegrees()), true);
                         }
-                        else if (lastResult.getTargetXDegrees() > 2 && switcher){
+                        else if (lastResult.getTargetXDegrees() > 2 && lockedOn){
                             follower().turnDegrees(Math.abs(lastResult.getTargetXDegrees()), false);
                         }
-                        else{
-                            return;
-                        }
-                        //telemetry.addData("last tx:",lastResult.getTargetXDegrees());
-
                     }
                 }
             }
