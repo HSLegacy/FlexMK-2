@@ -6,6 +6,7 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
@@ -41,11 +42,13 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
     CRServoEx lUptake = new CRServoEx("lUptake");
 
     LLResultTypes.FiducialResult lastResult = null;
+    private DigitalChannel limitSwitch = null;
 
     boolean running = true;
     double currentPose = 0;
     public int x = 0;
     public int y = 0;
+    public double flyWheelGoal = 0;
     public boolean z = false;
     private boolean toggleLock = false;
 
@@ -54,6 +57,11 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
     Button shootMacro = button(() -> gamepad2.left_bumper);
     Button offsetSpin = button(() -> gamepad2.x);
     Button offsetReset = button(() -> gamepad2.a);
+
+    Button  powerUpSmall = button(() -> gamepad1.dpad_up);
+    Button  powerDownSmall = button(() -> gamepad1.dpad_down);
+    Button  powerUpBig = button(() -> gamepad1.dpad_right);
+    Button  powerDownBig = button(() -> gamepad1.dpad_left);
 
 
     DriverControlledCommand driverControlled = new PedroDriverControlled(
@@ -67,8 +75,8 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
     public NewTeleopTwoControllers() {
         addComponents(
                 new PedroComponent(Constants::createFollower),
-                new SubsystemComponent(Spindexer.INSTANCE),
                 new SubsystemComponent(FlyWheel.INSTANCE),
+                new SubsystemComponent(Spindexer.INSTANCE),
                 BulkReadComponent.INSTANCE,
                 BindingsComponent.INSTANCE
         );
@@ -84,6 +92,10 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
         offsetReset.whenBecomesTrue(() -> twooffset());
         shootMacro.whenBecomesTrue(() -> shoot3().schedule());
         outakePosButton.whenBecomesTrue(() -> switchOuttakePos());
+        powerUpSmall.whenBecomesTrue(() -> flyWheelGoal += 10);
+        powerDownSmall.whenBecomesTrue(() -> flyWheelGoal -= 10);
+        powerUpBig.whenBecomesTrue(() -> flyWheelGoal += 100);
+        powerDownBig.whenBecomesTrue(() -> flyWheelGoal -= 100);
         button(() -> gamepad1.b)
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> runFlyWheel())
@@ -106,8 +118,8 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
 
         button(() -> gamepad1.y)
                 .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> Turret.INSTANCE.varSwitch1())
-                .whenBecomesFalse(() -> Turret.INSTANCE.varSwitch2());
+                .whenBecomesTrue(() -> Turret.INSTANCE.lockOn())
+                .whenBecomesFalse(() -> Turret.INSTANCE.lockOff());
     }
 
     @Override
@@ -115,6 +127,8 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
         BindingManager.update();
         telemetry.addData("spindexer Pos", Spindexer.INSTANCE.spindexer.getState().toString());
         telemetry.addData("spindexer Foal", Spindexer.INSTANCE.spindexerControl.getGoal().getPosition());
+        telemetry.addData("spindexer encoder", Spindexer.INSTANCE.spindexer.getRawTicks());
+        telemetry.addData("Flywheel Goal", flyWheelGoal);
         telemetry.addData("x number", x);
         telemetry.update();
 
@@ -133,6 +147,13 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
             }
         }
         //Turret.INSTANCE.lockOn(limelight);
+
+        if(!limitSwitch.getState())
+            Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        FlyWheel.INSTANCE.setGoal(flyWheelGoal);
+        Turret.INSTANCE.lockOnUpdate(limelight, telemetry);
+
     }
 
     public static Limelight3A limelight = null;
@@ -143,6 +164,8 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
+
+        limitSwitch = hardwareMap.get(DigitalChannel.class, "limitSwitch");
     }
 
     @Override

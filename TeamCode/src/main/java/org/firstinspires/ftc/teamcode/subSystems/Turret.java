@@ -10,6 +10,7 @@ import dev.nextftc.control.KineticState;
 import dev.nextftc.core.subsystems.Subsystem;
 import dev.nextftc.hardware.impl.MotorEx;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Teleop;
 
 import java.util.List;
@@ -43,13 +44,12 @@ public class Turret implements Subsystem {
     public void lockOff(){
         lockedOn = false;
     }
-    public void lockOnUpdate(Limelight3A limelight){
+    public void lockOnUpdate(Limelight3A limelight, Telemetry telemetry){
 
             LLResult result = limelight.getLatestResult();
 
 
-            if (result != null && lockedOn == true) {
-
+            if (result != null) {
 
                 if (result.isValid()) {
                     List<LLResultTypes.FiducialResult> feducialResults =  result.getFiducialResults();
@@ -57,6 +57,8 @@ public class Turret implements Subsystem {
                     lastResult = feducialResults.get(0);
 
                     if (lastResult != null){
+
+                        telemetry.addData("Camera Pose Target Space: ", lastResult.getCameraPoseTargetSpace());
                         if(lastResult.getTargetXDegrees() < -2 && lockedOn){
                             follower().turnDegrees(Math.abs(lastResult.getTargetXDegrees()), true);
                         }

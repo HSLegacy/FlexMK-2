@@ -39,6 +39,11 @@ public class FlyWheel implements Subsystem {
 
     public final Command off = new RunToVelocity(FlyWheelControl, 0.0).requires(this).named("FlywheelOff");
     public final Command on = new RunToVelocity(FlyWheelControl, 1300).requires(this).named("FlywheelOn");
+
+    public void setGoal(double goal){
+            Command on = new RunToVelocity(FlyWheelControl, goal).requires(this).named("FlywheelOn");
+            on.schedule();
+    }
     public final Command onAuto = new RunToVelocity(FlyWheelControl, 1550).requires(this).named("FlywheelOn");
 
     private boolean isStarted = false;

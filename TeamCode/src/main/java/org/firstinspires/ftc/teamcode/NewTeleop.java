@@ -118,7 +118,6 @@ public class NewTeleop extends NextFTCOpMode {
                 lUptake.setPower(0);
             }
         }
-        Turret.INSTANCE.lockOn(limelight);
     }
 
     public static Limelight3A limelight = null;
