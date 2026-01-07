@@ -48,7 +48,6 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
     double currentPose = 0;
     public int x = 0;
     public int y = 0;
-    public double flyWheelGoal = 0;
     public boolean z = false;
     private boolean toggleLock = false;
 
@@ -92,10 +91,10 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
         offsetReset.whenBecomesTrue(() -> twooffset());
         shootMacro.whenBecomesTrue(() -> shoot3().schedule());
         outakePosButton.whenBecomesTrue(() -> switchOuttakePos());
-        powerUpSmall.whenBecomesTrue(() -> flyWheelGoal += 10);
-        powerDownSmall.whenBecomesTrue(() -> flyWheelGoal -= 10);
-        powerUpBig.whenBecomesTrue(() -> flyWheelGoal += 100);
-        powerDownBig.whenBecomesTrue(() -> flyWheelGoal -= 100);
+        powerUpSmall.whenBecomesTrue(() -> Turret.INSTANCE.flyWheelGoal += 10);
+        powerDownSmall.whenBecomesTrue(() -> Turret.INSTANCE.flyWheelGoal -= 10);
+        powerUpBig.whenBecomesTrue(() -> Turret.INSTANCE.flyWheelGoal += 100);
+        powerDownBig.whenBecomesTrue(() -> Turret.INSTANCE.flyWheelGoal -= 100);
         button(() -> gamepad1.b)
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> runFlyWheel())
@@ -118,8 +117,8 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
 
         button(() -> gamepad1.y)
                 .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> Turret.INSTANCE.lockOn())
-                .whenBecomesFalse(() -> Turret.INSTANCE.lockOff());
+                .whenBecomesTrue(() -> Turret.INSTANCE.lockedOn = true)
+                .whenBecomesFalse(() -> Turret.INSTANCE.lockedOn = false);
     }
 
     @Override
@@ -128,7 +127,7 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
         telemetry.addData("spindexer Pos", Spindexer.INSTANCE.spindexer.getState().toString());
         telemetry.addData("spindexer Foal", Spindexer.INSTANCE.spindexerControl.getGoal().getPosition());
         telemetry.addData("spindexer encoder", Spindexer.INSTANCE.spindexer.getRawTicks());
-        telemetry.addData("Flywheel Goal", flyWheelGoal);
+        telemetry.addData("Flywheel Goal", Turret.INSTANCE.flyWheelGoal);
         telemetry.addData("x number", x);
         telemetry.update();
 
@@ -150,9 +149,8 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
 
         if(!limitSwitch.getState())
             Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        FlyWheel.INSTANCE.setGoal(flyWheelGoal);
         Turret.INSTANCE.lockOnUpdate(limelight, telemetry);
+        FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
 
     }
 

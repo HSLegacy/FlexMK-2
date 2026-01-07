@@ -8,9 +8,13 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
 import dev.nextftc.core.subsystems.Subsystem;
+import dev.nextftc.core.units.Angle;
+import dev.nextftc.extensions.pedro.TurnBy;
 import dev.nextftc.hardware.impl.MotorEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.NewTeleopTwoControllers;
 import org.firstinspires.ftc.teamcode.Teleop;
 
 import java.util.List;
@@ -18,10 +22,11 @@ import java.util.Map;
 
 public class Turret implements Subsystem {
     public static final Turret INSTANCE = new Turret();
-    boolean lockedOn = false;
+    public boolean lockedOn = false;
     private Turret() { }
 
     private MotorEx yLinear = new MotorEx("ylinear");
+    public double flyWheelGoal;
     public static boolean isStarted = false;
     LLResultTypes.FiducialResult lastResult = null;
 
@@ -38,12 +43,7 @@ public class Turret implements Subsystem {
             .posPid(0.004, 0.0, 0.0001)
             .elevatorFF(0)
             .build();
-    public void lockOn(){
-        lockedOn = true;
-    }
-    public void lockOff(){
-        lockedOn = false;
-    }
+
     public void lockOnUpdate(Limelight3A limelight, Telemetry telemetry){
 
             LLResult result = limelight.getLatestResult();
@@ -59,14 +59,27 @@ public class Turret implements Subsystem {
                     if (lastResult != null){
 
                         telemetry.addData("Camera Pose Target Space: ", lastResult.getCameraPoseTargetSpace());
-                        if(lastResult.getTargetXDegrees() < -2 && lockedOn){
-                            follower().turnDegrees(Math.abs(lastResult.getTargetXDegrees()), true);
+
+                        if(lastResult.getCameraPoseTargetSpace().getPosition().z > -3){
+                            flyWheelGoal = 184.4566 * Math.pow(lastResult.getCameraPoseTargetSpace().getPosition().z, 2) + 534.06469 * (lastResult.getCameraPoseTargetSpace().getPosition().z) + 1545.52227;
+                        }else{
+                            flyWheelGoal = -117.70721 * lastResult.getCameraPoseTargetSpace().getPosition().z + 1157.50788;
                         }
-                        else if (lastResult.getTargetXDegrees() > 2 && lockedOn){
-                            follower().turnDegrees(Math.abs(lastResult.getTargetXDegrees()), false);
+
+                        telemetry.addData("Function y: ", flyWheelGoal);
+
+                        telemetry.addData("locked on: ", lockedOn);
+
+                        telemetry.addData("robot Yaw: ", lastResult.getTargetPoseRobotSpace().getOrientation().getYaw());
+
+                        if((lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES) < -2 || lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES) < -2) && lockedOn){
+                            new TurnBy(Angle.fromDeg(lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES))).schedule();
                         }
                     }
                 }
+            }
+            else{
+                flyWheelGoal = 1150;
             }
 
             //telemetry.update();
