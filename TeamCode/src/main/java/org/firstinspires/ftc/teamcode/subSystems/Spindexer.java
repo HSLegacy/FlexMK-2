@@ -36,10 +36,11 @@ public class Spindexer implements Subsystem {
     public MotorEx spindexer = new MotorEx("spindexer");
 
     public ControlSystem spindexerControl = ControlSystem.builder()
-            .posPid(0.015,0, 0.00001)
+            .posPid(0.005,0, 0.000001)
             .build();
 
 
+    //Old spindexer pos stuff
     public final Command intakePos1 = new RunToPosition(spindexerControl, 0).requires(this).named("intakePos1");
     public final Command intakePos2 = new RunToPosition(spindexerControl, 171).requires(this).named("intakePos2");
     public final Command intakePos3 = new RunToPosition(spindexerControl, 358).requires(this).named("intakePos3");
@@ -49,6 +50,10 @@ public class Spindexer implements Subsystem {
     public final Command autoOutakePos4 = new RunToPosition(spindexerControl, -85).requires(this).named("outtakePos3");
     public final Command autoIntakePos4 = new RunToPosition(spindexerControl, -25).requires(this).named("outtakePos3");
     public final Command telopOffset = new RunToPosition(spindexerControl, -20).requires(this).named("outtakePos3");
+
+    //New Spindexer pos stuff
+    public final Command intakePosition = new RunToPosition(spindexerControl, -30).requires(this).named("intakePos1");
+    public final Command firingPosition = new RunToPosition(spindexerControl, -535).requires(this).named("intakePos1");
     private boolean isStarted = false;
 
     @Override
@@ -62,7 +67,7 @@ public class Spindexer implements Subsystem {
         telemetryManager.getTelemetry().addData("spindexer goal", spindexerControl.getGoal());
         telemetryManager.getTelemetry().update();
         manager.update();
-        spindexer.setPower((spindexerControl.calculate(spindexer.getState()))*0.4);
+        spindexer.setPower((spindexerControl.calculate(spindexer.getState())));
 
     }
 

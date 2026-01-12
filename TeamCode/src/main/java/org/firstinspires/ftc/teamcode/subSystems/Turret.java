@@ -62,8 +62,10 @@ public class Turret implements Subsystem {
 
                         if(lastResult.getCameraPoseTargetSpace().getPosition().z > -3){
                             flyWheelGoal = 184.4566 * Math.pow(lastResult.getCameraPoseTargetSpace().getPosition().z, 2) + 534.06469 * (lastResult.getCameraPoseTargetSpace().getPosition().z) + 1545.52227;
-                        }else{
+                        }else if(lastResult.getCameraPoseTargetSpace().getPosition().z < -3 && lastResult.getCameraPoseTargetSpace().getPosition().z > -6){
                             flyWheelGoal = -117.70721 * lastResult.getCameraPoseTargetSpace().getPosition().z + 1157.50788;
+                        } else {
+                            flyWheelGoal = 1150;
                         }
 
                         telemetry.addData("Function y: ", flyWheelGoal);
@@ -77,9 +79,7 @@ public class Turret implements Subsystem {
                         }
                     }
                 }
-            }
-            else{
-                flyWheelGoal = 1150;
+                else{flyWheelGoal = 1150;}
             }
 
             //telemetry.update();
