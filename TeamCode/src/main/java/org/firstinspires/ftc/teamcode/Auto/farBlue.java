@@ -31,6 +31,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
@@ -52,6 +53,7 @@ public class farBlue extends NextFTCOpMode {
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
     private int lastIndex = 0;
+    private DigitalChannel limitSwitch = null;
     private final Pose startPose = new Pose(52, 9, Math.toRadians(90));
     private final Pose fowardPose = new Pose(52, 75, Math.toRadians(90));
     private final Pose launchPose = new Pose(54, 85, Math.toRadians(132));
@@ -76,55 +78,16 @@ public class farBlue extends NextFTCOpMode {
     }
     public ParallelGroup runUptake = new ParallelGroup(new SetPower(lUptake, -1), new SetPower(rUptake, 1));
     public ParallelGroup stopUptake = new ParallelGroup(new SetPower(lUptake, 0), new SetPower(rUptake, 0));
-    public Command runIntake = new SetPower(intake, -1);
-    public Command shoot1 = new LambdaCommand()
+
+    public Command fire = new LambdaCommand()
             .setStart(() -> {
                 telemetry.addData("started", "it defeninitlky did the thing");
-                if (lastIndex == 21){
-                    telemetry.addData("21", "21 workeeded");
-                    Spindexer.INSTANCE.outakePos2.schedule();
-                }
-                else if (lastIndex == 22){
-                    Spindexer.INSTANCE.outakePos1.schedule();
-                }
-                else if (lastIndex == 23){
-                    Spindexer.INSTANCE.outakePos1.schedule();
-                }
-                else {
-                    Spindexer.INSTANCE.outakePos2.schedule();
-                }
-            });
-    public Command shoot2 = new LambdaCommand()
-            .setStart(() -> {
-                if (lastIndex == 21){
-                    Spindexer.INSTANCE.outakePos1.schedule();
-                }
-                else if (lastIndex == 22){
-                    Spindexer.INSTANCE.outakePos2.schedule();
-                }
-                else if (lastIndex == 23){
-                    Spindexer.INSTANCE.outakePos3.schedule();
-                }
-                else {
-                    Spindexer.INSTANCE.outakePos1.schedule();
-                }
-            });
-    public Command shoot3 = new LambdaCommand()
-            .setStart(() -> {
-                if (lastIndex == 21){
-                    Spindexer.INSTANCE.autoOutakePos4.schedule();
-                }
-                else if(lastIndex == 22){
-                    Spindexer.INSTANCE.outakePos3.schedule();
-                }
-                else if (lastIndex == 23){
-                    Spindexer.INSTANCE.outakePos2.schedule();
-                }
-                else {
-                    Spindexer.INSTANCE.autoOutakePos4.schedule();
-                }
+                lUptake.setPower(-1);
+                rUptake.setPower(1);
+                Spindexer.INSTANCE.firingPosition.schedule();
             });
 
+    public Command runIntake = new SetPower(intake, -1);
 
     public farBlue() {
         addComponents(
@@ -155,20 +118,8 @@ public class farBlue extends NextFTCOpMode {
                 new SequentialGroup(
                         new FollowPath(driveForward),
                         new FollowPath(launchPath),
-                        runIntake,
-                        shoot1,
-                        new Delay(1),
-                        runUptake,
-                        new Delay(2),
-                        shoot2,
-                        new Delay(1),
-                        runUptake,
-                        new Delay(2),
-                        shoot3,
-                        new Delay(1),
-                        runUptake,
-                        new Delay(2),
-                        stopUptake,
+                        fire,
+                        new Delay(4),
                         new FollowPath(parkPath)
                 )
         );
@@ -185,6 +136,15 @@ public class farBlue extends NextFTCOpMode {
             lastIndex = Turret.INSTANCE.getIndex(limelight);
             telemetry.addData("index", lastIndex);
         }
+
+        if(!limitSwitch.getState() && Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() != 0){
+            Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            Spindexer.INSTANCE.intakePosition.schedule();
+            lUptake.setPower(0);
+            rUptake.setPower(0);
+        }
+
+        Turret.INSTANCE.lockOnUpdate(limelight, telemetry);
         telemetry.update();
     }
 
@@ -194,7 +154,5 @@ public class farBlue extends NextFTCOpMode {
     public void onStop() {
 
     }
-
-
 
 }

@@ -63,6 +63,7 @@ public class NewTeleop extends NextFTCOpMode {
         addComponents(
                 new PedroComponent(Constants::createFollower),
                 new SubsystemComponent(FlyWheel.INSTANCE),
+                new SubsystemComponent(Turret.INSTANCE),
                 new SubsystemComponent(Spindexer.INSTANCE),
                 BulkReadComponent.INSTANCE,
                 BindingsComponent.INSTANCE
@@ -111,6 +112,7 @@ public class NewTeleop extends NextFTCOpMode {
             lUptake.setPower(0);
             rUptake.setPower(0);
         }
+
         Turret.INSTANCE.lockOnUpdate(limelight, telemetry);
         FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
 
@@ -139,28 +141,6 @@ public class NewTeleop extends NextFTCOpMode {
     }
     Runnable stopFlyWheel(){
         FlyWheel.INSTANCE.off.schedule();
-        return null;
-    }
-
-
-    private Command offset() {
-        Spindexer.INSTANCE.intakePos1.schedule();
-        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        return null;
-
-    }
-    private Command twooffset() {
-        Spindexer.INSTANCE.telopOffset.schedule();
-
-        return null;
-
-    }
-
-
-    Runnable offset2(){
-        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        //Spindexer.INSTANCE.spindexerControl.setLastMeasurement(new KineticState(currentPose, Spindexer.INSTANCE.spindexerControl.getLastMeasurement().getVelocity(), Spindexer.INSTANCE.spindexerControl.getLastMeasurement().getAcceleration()));
         return null;
     }
 
