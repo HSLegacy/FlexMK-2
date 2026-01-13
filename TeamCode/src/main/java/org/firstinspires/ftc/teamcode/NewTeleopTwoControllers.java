@@ -110,7 +110,7 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
         telemetry.addData("Flywheel Goal", Turret.INSTANCE.flyWheelGoal);
         telemetry.update();
 
-        if(!limitSwitch.getState()){
+        if(!limitSwitch.getState() && Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() != 0){
             Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             Spindexer.INSTANCE.intakePosition.schedule();
             lUptake.setPower(0);
