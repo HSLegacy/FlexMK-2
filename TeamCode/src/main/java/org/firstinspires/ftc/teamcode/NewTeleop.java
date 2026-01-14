@@ -49,6 +49,7 @@ public class NewTeleop extends NextFTCOpMode {
 
 
     Button fire = button(() -> gamepad1.a);
+    Button resetSpindexer = button(() -> gamepad1.dpad_down);
 
 
     DriverControlledCommand driverControlled = new PedroDriverControlled(
@@ -76,6 +77,7 @@ public class NewTeleop extends NextFTCOpMode {
         driverControlled.schedule();
 
         fire.whenBecomesTrue(() -> fireFuction());
+        resetSpindexer.whenBecomesTrue(() -> Spindexer.INSTANCE.intakePosition.schedule());
         button(() -> gamepad1.b)
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> runFlyWheel())
@@ -101,7 +103,7 @@ public class NewTeleop extends NextFTCOpMode {
     public void onUpdate() {
         BindingManager.update();
         telemetry.addData("spindexer Pos", Spindexer.INSTANCE.spindexer.getState().toString());
-        telemetry.addData("spindexer Foal", Spindexer.INSTANCE.spindexerControl.getGoal().getPosition());
+        telemetry.addData("spindexer Goal", Spindexer.INSTANCE.spindexerControl.getGoal().getPosition());
         telemetry.addData("spindexer encoder", Spindexer.INSTANCE.spindexer.getRawTicks());
         telemetry.addData("Flywheel Goal", Turret.INSTANCE.flyWheelGoal);
         telemetry.update();
@@ -136,11 +138,11 @@ public class NewTeleop extends NextFTCOpMode {
     }
 
     Runnable runFlyWheel(){
-        FlyWheel.INSTANCE.on.schedule();
+        Turret.INSTANCE.flyWheelGoal = 1150;
         return null;
     }
     Runnable stopFlyWheel(){
-        FlyWheel.INSTANCE.off.schedule();
+        Turret.INSTANCE.flyWheelGoal = 0;
         return null;
     }
 

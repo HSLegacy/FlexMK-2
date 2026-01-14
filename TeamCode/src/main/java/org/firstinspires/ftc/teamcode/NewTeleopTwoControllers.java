@@ -32,7 +32,7 @@ import dev.nextftc.ftc.components.BulkReadComponent;
 import dev.nextftc.hardware.driving.DriverControlledCommand;
 import dev.nextftc.hardware.impl.CRServoEx;
 import dev.nextftc.hardware.powerable.SetPower;
-
+/*
 @TeleOp(name = "NewTeleOpTwoControllers")
 
 public class NewTeleopTwoControllers extends NextFTCOpMode {
@@ -177,3 +177,4 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
     }
 
 }
+*/
