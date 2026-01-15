@@ -1,7 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
 import static dev.nextftc.bindings.Bindings.button;
+import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -149,7 +153,7 @@ public class NewTeleop extends NextFTCOpMode {
     Runnable fireFuction(){
         lUptake.setPower(-1);
         rUptake.setPower(1);
-        Spindexer.INSTANCE.firingPosition.schedule();
+        Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState( Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() - 530));
         return null;
     }
 

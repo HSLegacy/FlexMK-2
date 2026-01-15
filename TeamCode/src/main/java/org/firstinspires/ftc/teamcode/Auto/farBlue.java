@@ -122,7 +122,6 @@ public class farBlue extends NextFTCOpMode {
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
         FlyWheel.INSTANCE.off.schedule();
         buildPaths();
-        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         follower().setStartingPose(startPose);
     }
 
@@ -146,6 +145,7 @@ public class farBlue extends NextFTCOpMode {
     public void onStartButtonPressed() {
         autonomousRoutine().schedule();
         Turret.INSTANCE.flyWheelGoal = 1200;
+        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     @Override
@@ -163,6 +163,7 @@ public class farBlue extends NextFTCOpMode {
         }
 
         FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
+        Turret.INSTANCE.lockOnUpdate(limelight, telemetry);
 
         telemetry.addData("spindexer Pos", Spindexer.INSTANCE.spindexer.getCurrentPosition());
         telemetry.addData("spindexer Goal", Spindexer.INSTANCE.spindexerControl.getGoal().getPosition());

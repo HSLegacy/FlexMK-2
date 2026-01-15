@@ -3,20 +3,17 @@ import org.firstinspires.ftc.teamcode.subSystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subSystems.Turret;
 import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
 
-
 import static java.lang.Math.abs;
 
 import dev.nextftc.core.commands.Command;
+import dev.nextftc.core.commands.conditionals.IfElseCommand;
 import dev.nextftc.core.commands.delays.Delay;
 import dev.nextftc.core.commands.groups.ParallelGroup;
 import dev.nextftc.core.commands.groups.SequentialGroup;
 import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.components.SubsystemComponent;
-import dev.nextftc.core.units.Angle;
 import dev.nextftc.extensions.pedro.FollowPath;
 import dev.nextftc.extensions.pedro.PedroComponent;
-import dev.nextftc.extensions.pedro.TurnBy;
-import dev.nextftc.extensions.pedro.TurnTo;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 import dev.nextftc.hardware.impl.CRServoEx;
@@ -29,89 +26,53 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
+import java.util.List;
 import java.util.Timer;
+import java.util.TimerTask;
 
-@Autonomous(name = "closeBlue")
+@Autonomous(name = "shootFarBlue")
 
-public class closeBlue extends NextFTCOpMode {
+public class shootFarBlue extends NextFTCOpMode {
+    double flyWheelGoal = 1100;
+    boolean lockedOn = false;
     CRServoEx intake = new CRServoEx("intake");
     CRServoEx lUptake = new CRServoEx("lUptake");
     CRServoEx rUptake = new CRServoEx("rUptake");
-
-    LLResultTypes.FiducialResult lastResult = null;
-    private int lastIndex = 0;
     private DigitalChannel limitSwitch = null;
-
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
+    private int lastIndex = 0;
+    private final Pose startPose = new Pose(52, 9, Math.toRadians(90));
+    private final Pose launchPose = new Pose(52, 15, Math.toRadians(113));
+    private final Pose parkPose = new Pose(38, 15, Math.toRadians(180));
 
-    private final Pose startPose = new Pose(22, 123, Math.toRadians(90));
-    private final Pose cameraPose = new Pose(60, 95, Math.toRadians(90));
-    private final Pose launchPose = new Pose(60, 85, Math.toRadians(145));
-    private final Pose pickUp1 = new Pose(37.5, 85.5, Math.toRadians(180));
-    private final Pose pickUp3 = new Pose(17, 85.5, Math.toRadians(180));
-    private final Pose launchPose2 = new Pose(60, 85, Math.toRadians(145));
-    private final Pose spike2Spot1 = new Pose(37.5, 60.5, Math.toRadians(180));
-    private final Pose spike2Spot2 = new Pose(14, 60.5, Math.toRadians(180));
-    private final Pose launchPose3 = new Pose(60, 85, Math.toRadians(138));
-    private final Pose parkPose = new Pose(55,130, Math.toRadians(180));
-
-    public PathChain cameraPath, launchPath, pickPath1, pickPath2, launchPath2, parkPath, spike21, spike22, launchPath3;
+    public PathChain launchPath, parkPath;
 
     public void buildPaths() {
-        cameraPath = follower().pathBuilder()
-                .addPath(new BezierLine(startPose, cameraPose))
-                .setLinearHeadingInterpolation(startPose.getHeading(), cameraPose.getHeading())
-                .build();
+
         launchPath = follower().pathBuilder()
-                .addPath(new BezierLine(cameraPose, launchPose))
-                .setLinearHeadingInterpolation(cameraPose.getHeading(), launchPose.getHeading())
-                .build();
-        pickPath1 = follower().pathBuilder()
-                .addPath(new BezierLine(launchPose, pickUp1))
-                .setLinearHeadingInterpolation(launchPose.getHeading(), pickUp1.getHeading())
-                .build();
-        pickPath2 = follower().pathBuilder()
-                .addPath(new BezierLine(pickUp1, pickUp3))
-                .setLinearHeadingInterpolation(pickUp1.getHeading(), pickUp3.getHeading())
-                .build();
-        launchPath2 = follower().pathBuilder()
-                .addPath(new BezierLine(pickUp3, launchPose2))
-                .setLinearHeadingInterpolation(pickUp3.getHeading(), launchPose2.getHeading())
-                .setBrakingStrength(1)
-                .build();
-        spike21 = follower().pathBuilder()
-                .addPath(new BezierLine(launchPose2,spike2Spot1))
-                .setLinearHeadingInterpolation(launchPose2.getHeading(), spike2Spot1.getHeading())
-                .build();
-        spike22 = follower().pathBuilder()
-                .addPath(new BezierLine(spike2Spot1,spike2Spot2))
-                .setLinearHeadingInterpolation(spike2Spot1.getHeading(), spike2Spot2.getHeading())
-                .setBrakingStrength(1)
-                .build();
-        launchPath3 = follower().pathBuilder()
-                .addPath(new BezierLine(spike2Spot2,launchPose3))
-                .setLinearHeadingInterpolation(spike2Spot2.getHeading(), launchPose3.getHeading())
+                .addPath(new BezierLine(startPose, launchPose))
+                .setLinearHeadingInterpolation(startPose.getHeading(), launchPose.getHeading())
                 .build();
         parkPath = follower().pathBuilder()
                 .addPath(new BezierLine(launchPose, parkPose))
                 .setLinearHeadingInterpolation(launchPose.getHeading(), parkPose.getHeading())
                 .build();
     }
-
-    public Command runIntake = new SetPower(intake, -1);
-
     public Command fire = new LambdaCommand()
             .setStart(() -> {
                 telemetry.addData("started", "it defeninitlky did the thing");
@@ -120,15 +81,9 @@ public class closeBlue extends NextFTCOpMode {
                 Spindexer.INSTANCE.firingPosition.schedule();
             });
 
-    public Command findIndex = new LambdaCommand()
-            .setStart(() -> {
-                if (Turret.INSTANCE.getIndex(limelight) != 0 && Turret.INSTANCE.getIndex(limelight) != 20 && Turret.INSTANCE.getIndex(limelight) != 24 && lastIndex == 0 && Turret.INSTANCE.getIndex(limelight) != 24) {
-                    lastIndex = Turret.INSTANCE.getIndex(limelight);
-                    telemetry.addData("index", lastIndex);
-                }
-                telemetry.update();
-            });
-    public closeBlue() {
+    public Command runIntake = new SetPower(intake, -1);
+
+    public shootFarBlue() {
         addComponents(
                 new SubsystemComponent(Spindexer.INSTANCE),
                 new SubsystemComponent(Turret.INSTANCE),
@@ -151,21 +106,8 @@ public class closeBlue extends NextFTCOpMode {
     }
 
     private Command autonomousRoutine() {
-            return new SequentialGroup(
-                new FollowPath(cameraPath),
-                findIndex,
+        return new SequentialGroup(
                 new FollowPath(launchPath),
-                fire,
-                new Delay(4),
-                runIntake,
-                new FollowPath(pickPath1),
-                new FollowPath(pickPath2, true, .6),
-                new FollowPath(launchPath2),
-                fire,
-                new Delay(4),
-                new FollowPath(spike21),
-                new FollowPath(spike22, true, .6),
-                new FollowPath(launchPath3),
                 fire,
                 new Delay(4),
                 new FollowPath(parkPath)
@@ -175,10 +117,9 @@ public class closeBlue extends NextFTCOpMode {
     @Override
     public void onStartButtonPressed() {
         autonomousRoutine().schedule();
-        Turret.INSTANCE.flyWheelGoal = 1200;
+        Turret.INSTANCE.flyWheelGoal = 1550;
         Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
-
 
     @Override
     public void onUpdate() {
@@ -197,6 +138,7 @@ public class closeBlue extends NextFTCOpMode {
         FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
         Turret.INSTANCE.lockOnUpdate(limelight, telemetry);
 
+
         telemetry.addData("spindexer Pos", Spindexer.INSTANCE.spindexer.getCurrentPosition());
         telemetry.addData("spindexer Goal", Spindexer.INSTANCE.spindexerControl.getGoal().getPosition());
         telemetry.addData("Flywheel Goal", Turret.INSTANCE.flyWheelGoal);
@@ -209,6 +151,5 @@ public class closeBlue extends NextFTCOpMode {
     public void onStop() {
 
     }
-
 
 }

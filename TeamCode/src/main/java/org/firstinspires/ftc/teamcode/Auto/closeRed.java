@@ -155,7 +155,6 @@ public class closeRed extends NextFTCOpMode {
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
-        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         FlyWheel.INSTANCE.off.schedule();
         buildPaths();
         follower().setStartingPose(startPose);
@@ -187,6 +186,7 @@ public class closeRed extends NextFTCOpMode {
     public void onStartButtonPressed() {
         autonomousRoutine().schedule();
         Turret.INSTANCE.flyWheelGoal = 1200;
+        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
 
@@ -205,6 +205,7 @@ public class closeRed extends NextFTCOpMode {
         }
 
         FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
+        Turret.INSTANCE.lockOnUpdate(limelight, telemetry);
 
         telemetry.addData("spindexer Pos", Spindexer.INSTANCE.spindexer.getCurrentPosition());
         telemetry.addData("spindexer Goal", Spindexer.INSTANCE.spindexerControl.getGoal().getPosition());

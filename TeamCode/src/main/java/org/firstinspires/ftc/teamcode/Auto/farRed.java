@@ -26,28 +26,32 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
+import java.util.List;
 import java.util.Timer;
+import java.util.TimerTask;
 
 @Autonomous(name = "farRed")
 
 public class farRed extends NextFTCOpMode {
-
+    double flyWheelGoal = 1100;
+    boolean lockedOn = false;
     CRServoEx intake = new CRServoEx("intake");
     CRServoEx lUptake = new CRServoEx("lUptake");
     CRServoEx rUptake = new CRServoEx("rUptake");
-
-    LLResultTypes.FiducialResult lastResult = null;
-
+    private DigitalChannel limitSwitch = null;
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
@@ -58,10 +62,16 @@ public class farRed extends NextFTCOpMode {
             .mirror();
     private final Pose launchPose = new Pose(54, 85, Math.toRadians(132))
             .mirror();
+    private final Pose spike1spot1 = new Pose(40, 84.5, Math.toRadians(180))
+            .mirror();
+    private final Pose spike1spot2 = new Pose(14, 84.5, Math.toRadians(180))
+            .mirror();
+    private final Pose launchPose2 = new Pose(54, 85, Math.toRadians(140))
+            .mirror();
     private final Pose parkPose = new Pose(45, 70, Math.toRadians(180))
             .mirror();
 
-    public PathChain driveForward, launchPath, parkPath;
+    public PathChain driveForward, launchPath, parkPath, spike11, spike12, launchPath2;
 
     public void buildPaths() {
 
@@ -73,62 +83,32 @@ public class farRed extends NextFTCOpMode {
                 .addPath(new BezierLine(fowardPose, launchPose))
                 .setLinearHeadingInterpolation(fowardPose.getHeading(), launchPose.getHeading())
                 .build();
+        spike11 = follower().pathBuilder()
+                .addPath(new BezierLine(launchPose, spike1spot1))
+                .setLinearHeadingInterpolation(launchPose.getHeading(), spike1spot1.getHeading())
+                .build();
+        spike12 = follower().pathBuilder()
+                .addPath(new BezierLine(spike1spot1, spike1spot2))
+                .setLinearHeadingInterpolation(spike1spot1.getHeading(), spike1spot2.getHeading())
+                .build();
+        launchPath2 =  follower().pathBuilder()
+                .addPath(new BezierLine(spike1spot2,launchPose2))
+                .setLinearHeadingInterpolation(spike1spot2.getHeading(), launchPose2.getHeading())
+                .build();
         parkPath = follower().pathBuilder()
                 .addPath(new BezierLine(launchPose, parkPose))
                 .setLinearHeadingInterpolation(launchPose.getHeading(), parkPose.getHeading())
                 .build();
     }
-    public ParallelGroup runUptake = new ParallelGroup(new SetPower(lUptake, -1), new SetPower(rUptake, 1));
-    public ParallelGroup stopUptake = new ParallelGroup(new SetPower(lUptake, 0), new SetPower(rUptake, 0));
-    public Command runIntake = new SetPower(intake, -1);
-    public Command shoot1 = new LambdaCommand()
+    public Command fire = new LambdaCommand()
             .setStart(() -> {
                 telemetry.addData("started", "it defeninitlky did the thing");
-                if (lastIndex == 21){
-                    telemetry.addData("21", "21 workeeded");
-                    Spindexer.INSTANCE.outakePos2.schedule();
-                }
-                else if (lastIndex == 22){
-                    Spindexer.INSTANCE.outakePos1.schedule();
-                }
-                else if (lastIndex == 23){
-                    Spindexer.INSTANCE.outakePos1.schedule();
-                }
-                else {
-                    Spindexer.INSTANCE.outakePos2.schedule();
-                }
-            });
-    public Command shoot2 = new LambdaCommand()
-            .setStart(() -> {
-                if (lastIndex == 21){
-                    Spindexer.INSTANCE.outakePos1.schedule();
-                }
-                else if (lastIndex == 22){
-                    Spindexer.INSTANCE.outakePos2.schedule();
-                }
-                else if (lastIndex == 23){
-                    Spindexer.INSTANCE.outakePos3.schedule();
-                }
-                else {
-                    Spindexer.INSTANCE.outakePos1.schedule();
-                }
-            });
-    public Command shoot3 = new LambdaCommand()
-            .setStart(() -> {
-                if (lastIndex == 21){
-                    Spindexer.INSTANCE.autoOutakePos4.schedule();
-                }
-                else if(lastIndex == 22){
-                    Spindexer.INSTANCE.outakePos3.schedule();
-                }
-                else if (lastIndex == 23){
-                    Spindexer.INSTANCE.outakePos2.schedule();
-                }
-                else {
-                    Spindexer.INSTANCE.autoOutakePos4.schedule();
-                }
+                lUptake.setPower(-1);
+                rUptake.setPower(1);
+                Spindexer.INSTANCE.firingPosition.schedule();
             });
 
+    public Command runIntake = new SetPower(intake, -1);
 
     public farRed() {
         addComponents(
@@ -143,44 +123,36 @@ public class farRed extends NextFTCOpMode {
     @Override
     public void onInit() {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        limitSwitch = hardwareMap.get(DigitalChannel.class, "limitSwitch");
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
         FlyWheel.INSTANCE.off.schedule();
         buildPaths();
-        Spindexer.INSTANCE.intakePos1.schedule();
-        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         follower().setStartingPose(startPose);
     }
 
     private Command autonomousRoutine() {
-        return new ParallelGroup(
-                FlyWheel.INSTANCE.on,
-                new SequentialGroup(
-                        new FollowPath(driveForward),
-                        new FollowPath(launchPath),
-                        runIntake,
-                        shoot1,
-                        new Delay(1),
-                        runUptake,
-                        new Delay(2),
-                        shoot2,
-                        new Delay(1),
-                        runUptake,
-                        new Delay(2),
-                        shoot3,
-                        new Delay(1),
-                        runUptake,
-                        new Delay(2),
-                        stopUptake,
-                        new FollowPath(parkPath)
-                )
+        return new SequentialGroup(
+                new FollowPath(driveForward),
+                new FollowPath(launchPath),
+                fire,
+                new Delay(4),
+                runIntake,
+                new FollowPath(spike11),
+                new FollowPath(spike12, true, .6),
+                new FollowPath(launchPath2),
+                fire,
+                new Delay(4),
+                new FollowPath(parkPath)
         );
     }
 
     @Override
     public void onStartButtonPressed() {
         autonomousRoutine().schedule();
+        Turret.INSTANCE.flyWheelGoal = 1200;
+        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     @Override
@@ -189,6 +161,21 @@ public class farRed extends NextFTCOpMode {
             lastIndex = Turret.INSTANCE.getIndex(limelight);
             telemetry.addData("index", lastIndex);
         }
+
+        if(!limitSwitch.getState() && Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() != -45){
+            Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            Spindexer.INSTANCE.intakePosition.schedule();
+            lUptake.setPower(0);
+            rUptake.setPower(0);
+        }
+
+        FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
+        Turret.INSTANCE.lockOnUpdate(limelight, telemetry);
+
+
+        telemetry.addData("spindexer Pos", Spindexer.INSTANCE.spindexer.getCurrentPosition());
+        telemetry.addData("spindexer Goal", Spindexer.INSTANCE.spindexerControl.getGoal().getPosition());
+        telemetry.addData("Flywheel Goal", Turret.INSTANCE.flyWheelGoal);
         telemetry.update();
     }
 
@@ -198,7 +185,5 @@ public class farRed extends NextFTCOpMode {
     public void onStop() {
 
     }
-
-
 
 }
