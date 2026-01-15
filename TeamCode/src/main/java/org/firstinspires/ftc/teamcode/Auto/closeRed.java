@@ -60,7 +60,7 @@ public class closeRed extends NextFTCOpMode {
             .mirror();
     private final Pose cameraPose = new Pose(60, 95, Math.toRadians(90))
             .mirror();
-    private final Pose launchPose = new Pose(60, 85, Math.toRadians(145))
+    private final Pose launchPose = new Pose(60, 85, Math.toRadians(148))
             .mirror();
     private final Pose pickUp1 = new Pose(37.5, 85.5, Math.toRadians(180))
             .mirror();
@@ -187,6 +187,7 @@ public class closeRed extends NextFTCOpMode {
         autonomousRoutine().schedule();
         Turret.INSTANCE.flyWheelGoal = 1200;
         Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Spindexer.INSTANCE.isStarted = true;
     }
 
 

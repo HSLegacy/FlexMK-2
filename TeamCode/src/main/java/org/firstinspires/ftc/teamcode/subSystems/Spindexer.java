@@ -54,7 +54,7 @@ public class Spindexer implements Subsystem {
     //New Spindexer pos stuff
     public final Command intakePosition = new RunToPosition(spindexerControl, -45, 0).requires(this).named("intakePos1");
     public final Command firingPosition = new RunToPosition(spindexerControl, -530, 0).requires(this).named("intakePos1");
-    private boolean isStarted = false;
+    public boolean isStarted = false;
 
     @Override
     public void initialize() {
@@ -66,7 +66,9 @@ public class Spindexer implements Subsystem {
         telemetryManager.getTelemetry().addData("spindexer goal", spindexerControl.getGoal());
         telemetryManager.getTelemetry().update();
         manager.update();
-        spindexer.setPower((spindexerControl.calculate(spindexer.getState())));
+        if(isStarted){
+            spindexer.setPower((spindexerControl.calculate(spindexer.getState())));
+        }
 
     }
 

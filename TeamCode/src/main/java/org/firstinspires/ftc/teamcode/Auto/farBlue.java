@@ -146,6 +146,7 @@ public class farBlue extends NextFTCOpMode {
         autonomousRoutine().schedule();
         Turret.INSTANCE.flyWheelGoal = 1200;
         Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Spindexer.INSTANCE.isStarted = true;
     }
 
     @Override

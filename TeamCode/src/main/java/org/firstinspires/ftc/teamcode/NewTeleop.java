@@ -78,10 +78,13 @@ public class NewTeleop extends NextFTCOpMode {
 
     @Override
     public void onStartButtonPressed() {
+        Spindexer.INSTANCE.isStarted = true;
         driverControlled.schedule();
 
         fire.whenBecomesTrue(() -> fireFuction());
         resetSpindexer.whenBecomesTrue(() -> Spindexer.INSTANCE.intakePosition.schedule());
+        button(() -> gamepad1.x)
+                .whenBecomesTrue(() -> follower().setPose(new Pose(0, 0,0)));
         button(() -> gamepad1.b)
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> runFlyWheel())
