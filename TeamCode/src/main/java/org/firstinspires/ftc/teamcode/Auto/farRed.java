@@ -60,13 +60,13 @@ public class farRed extends NextFTCOpMode {
             .mirror();
     private final Pose fowardPose = new Pose(52, 75, Math.toRadians(90))
             .mirror();
-    private final Pose launchPose = new Pose(54, 85, Math.toRadians(132))
+    private final Pose launchPose = new Pose(50, 85, Math.toRadians(135))
             .mirror();
     private final Pose spike1spot1 = new Pose(40, 84.5, Math.toRadians(180))
             .mirror();
     private final Pose spike1spot2 = new Pose(14, 84.5, Math.toRadians(180))
             .mirror();
-    private final Pose launchPose2 = new Pose(54, 85, Math.toRadians(140))
+    private final Pose launchPose2 = new Pose(50, 85, Math.toRadians(140))
             .mirror();
     private final Pose parkPose = new Pose(45, 70, Math.toRadians(180))
             .mirror();

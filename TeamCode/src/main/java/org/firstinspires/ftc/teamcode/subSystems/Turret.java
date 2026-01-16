@@ -81,6 +81,38 @@ public class Turret implements Subsystem {
         //telemetry.update();
 
     }
+    public void lockOn(Limelight3A limelight, Telemetry telemetry){
+
+        LLResult result = limelight.getLatestResult();
+
+
+        if (result != null) {
+
+            if (result.isValid()) {
+                List<LLResultTypes.FiducialResult> feducialResults =  result.getFiducialResults();
+                //telemetry.addData("Tx:", feducialResults.get(0).getTargetXDegrees());
+                lastResult = feducialResults.get(0);
+
+                if (lastResult != null){
+
+                    telemetry.addData("Camera Pose Target Space: ", lastResult.getCameraPoseTargetSpace());
+
+                    telemetry.addData("Function y: ", flyWheelGoal);
+
+                    telemetry.addData("locked on: ", lockedOn);
+
+                    telemetry.addData("robot Yaw: ", lastResult.getTargetPoseRobotSpace().getOrientation().getYaw());
+
+                    if((lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES) < -2 || lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES) < -2) && lockedOn){
+                        new TurnBy(Angle.fromDeg(lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES))).schedule();
+                    }
+                }
+            }
+        }
+
+        //telemetry.update();
+
+    }
 
     public int getIndex(Limelight3A limelight){
         LLResult result = limelight.getLatestResult();

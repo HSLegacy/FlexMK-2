@@ -57,14 +57,14 @@ public class closeBlue extends NextFTCOpMode {
     private int pathState;
 
     private final Pose startPose = new Pose(22, 123, Math.toRadians(90));
-    private final Pose cameraPose = new Pose(60, 95, Math.toRadians(90));
-    private final Pose launchPose = new Pose(60, 85, Math.toRadians(145));
+    private final Pose cameraPose = new Pose(55, 95, Math.toRadians(90));
+    private final Pose launchPose = new Pose(55, 85, Math.toRadians(140));
     private final Pose pickUp1 = new Pose(37.5, 85.5, Math.toRadians(180));
     private final Pose pickUp3 = new Pose(17, 85.5, Math.toRadians(180));
-    private final Pose launchPose2 = new Pose(60, 85, Math.toRadians(145));
+    private final Pose launchPose2 = new Pose(55, 85, Math.toRadians(145));
     private final Pose spike2Spot1 = new Pose(37.5, 60.5, Math.toRadians(180));
     private final Pose spike2Spot2 = new Pose(14, 60.5, Math.toRadians(180));
-    private final Pose launchPose3 = new Pose(60, 85, Math.toRadians(138));
+    private final Pose launchPose3 = new Pose(55, 85, Math.toRadians(138));
     private final Pose parkPose = new Pose(55,130, Math.toRadians(180));
 
     public PathChain cameraPath, launchPath, pickPath1, pickPath2, launchPath2, parkPath, spike21, spike22, launchPath3;

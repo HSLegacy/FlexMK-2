@@ -99,11 +99,10 @@ public class NewTeleop extends NextFTCOpMode {
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> intake.setPower(1))
                 .whenBecomesFalse(() -> intake.setPower(0));
-
         button(() -> gamepad1.y)
                 .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> Turret.INSTANCE.lockedOn = true)
-                .whenBecomesFalse(() -> Turret.INSTANCE.lockedOn = false);
+                .whenBecomesTrue(() -> Turret.INSTANCE.lockOn(limelight, telemetry))
+                .whenBecomesFalse(() -> Turret.INSTANCE.lockOn(limelight, telemetry));
     }
 
     @Override
