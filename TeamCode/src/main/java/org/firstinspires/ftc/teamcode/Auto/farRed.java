@@ -128,6 +128,7 @@ public class farRed extends NextFTCOpMode {
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
         FlyWheel.INSTANCE.off.schedule();
+        Spindexer.INSTANCE.intakePos1.schedule();
         buildPaths();
         follower().setStartingPose(startPose);
     }

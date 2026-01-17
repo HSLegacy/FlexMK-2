@@ -110,6 +110,7 @@ public class closeBlueOS extends NextFTCOpMode {
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
         FlyWheel.INSTANCE.off.schedule();
         buildPaths();
+        Spindexer.INSTANCE.intakePos1.schedule();
         follower().setStartingPose(startPose);
     }
 

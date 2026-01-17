@@ -148,6 +148,7 @@ public class closeBlue extends NextFTCOpMode {
         FlyWheel.INSTANCE.off.schedule();
         buildPaths();
         follower().setStartingPose(startPose);
+        Spindexer.INSTANCE.intakePos1.schedule();
     }
 
     private Command autonomousRoutine() {
