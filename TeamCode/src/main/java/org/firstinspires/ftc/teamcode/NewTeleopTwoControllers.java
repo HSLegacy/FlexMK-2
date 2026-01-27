@@ -35,7 +35,7 @@ import dev.nextftc.ftc.components.BulkReadComponent;
 import dev.nextftc.hardware.driving.DriverControlledCommand;
 import dev.nextftc.hardware.impl.CRServoEx;
 import dev.nextftc.hardware.powerable.SetPower;
-
+/*
 @TeleOp(name = "NewTeleOpTwoControllers")
 
 public class NewTeleopTwoControllers extends NextFTCOpMode {
@@ -48,22 +48,12 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
     private DigitalChannel limitSwitch = null;
 
     boolean running = true;
-    double currentPose = 0;
-    public int x = 0;
-    public int y = 0;
-    public boolean z = false;
     private boolean toggleLock = false;
 
-    Button intakePosButton = button(() -> gamepad2.dpad_left);
-    Button outakePosButton = button(() -> gamepad2.dpad_right);
-    Button shootMacro = button(() -> gamepad2.left_bumper);
     Button offsetSpin = button(() -> gamepad2.x);
     Button offsetReset = button(() -> gamepad2.a);
-
-    Button  powerUpSmall = button(() -> gamepad1.dpad_up);
-    Button  powerDownSmall = button(() -> gamepad1.dpad_down);
-    Button  powerUpBig = button(() -> gamepad1.dpad_right);
-    Button  powerDownBig = button(() -> gamepad1.dpad_left);
+    Button manuelFlyWheels = button(() -> gamepad2.y);
+    Button fire = button(() -> gamepad2.right_bumper);
 
 
     DriverControlledCommand driverControlled = new PedroDriverControlled(
@@ -89,15 +79,10 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
     public void onStartButtonPressed() {
         driverControlled.schedule();
 
-        intakePosButton.whenBecomesTrue(() -> switchIntakePos());
         offsetSpin.whenBecomesTrue(() -> offset());
         offsetReset.whenBecomesTrue(() -> twooffset());
-        shootMacro.whenBecomesTrue(() -> shoot3().schedule());
-        outakePosButton.whenBecomesTrue(() -> switchOuttakePos());
-        powerUpSmall.whenBecomesTrue(() -> Turret.INSTANCE.flyWheelGoal += 10);
-        powerDownSmall.whenBecomesTrue(() -> Turret.INSTANCE.flyWheelGoal -= 10);
-        powerUpBig.whenBecomesTrue(() -> Turret.INSTANCE.flyWheelGoal += 100);
-        powerDownBig.whenBecomesTrue(() -> Turret.INSTANCE.flyWheelGoal -= 100);
+        fire.whenBecomesTrue(() -> fireFuction());
+        manuelFlyWheels.whenBecomesTrue(() -> FlyWheel.INSTANCE.on.schedule());
         button(() -> gamepad1.b)
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> runFlyWheel())
@@ -113,11 +98,6 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
                 .whenBecomesTrue(() -> intake.setPower(1))
                 .whenBecomesFalse(() -> intake.setPower(0));
 
-        button(() -> gamepad2.right_bumper)
-                .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> Uptake())
-                .whenBecomesFalse(() -> UptakeOff());
-
         button(() -> gamepad1.y)
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> Turret.INSTANCE.lockedOn = true)
@@ -131,27 +111,14 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
         telemetry.addData("spindexer Foal", Spindexer.INSTANCE.spindexerControl.getGoal().getPosition());
         telemetry.addData("spindexer encoder", Spindexer.INSTANCE.spindexer.getRawTicks());
         telemetry.addData("Flywheel Goal", Turret.INSTANCE.flyWheelGoal);
-        telemetry.addData("x number", x);
         telemetry.update();
 
-        if (Spindexer.INSTANCE.spindexer.getCurrentPosition() > Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() + 15) {
-            rUptake.setPower(1);
-            lUptake.setPower(1);
-            z = false;
-        } else if (Spindexer.INSTANCE.spindexer.getCurrentPosition() < Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() - 15) {
-            rUptake.setPower(-1);
-            lUptake.setPower(-1);
-            z = false;
-        } else {
-            if (z == false) {
-                rUptake.setPower(0);
-                lUptake.setPower(0);
-            }
-        }
-        //Turret.INSTANCE.lockOn(limelight);
-
-        if(!limitSwitch.getState())
+        if(!limitSwitch.getState() && Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() != 0){
             Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            Spindexer.INSTANCE.intakePosition.schedule();
+            lUptake.setPower(0);
+            rUptake.setPower(0);
+        }
         Turret.INSTANCE.lockOnUpdate(limelight, telemetry);
         FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
 
@@ -198,23 +165,6 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
 
     }
 
-    private SequentialGroup shoot3() {
-        return new SequentialGroup(
-                Spindexer.INSTANCE.outakePos1,
-                new Delay(.5),
-                runUptake,
-                new Delay(2),
-                Spindexer.INSTANCE.outakePos2,
-                new Delay(.5),
-                runUptake,
-                new Delay(2),
-                Spindexer.INSTANCE.outakePos3,
-                new Delay(.5),
-                runUptake
-        );
-
-
-    }
 
     Runnable offset2(){
         Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -222,45 +172,12 @@ public class NewTeleopTwoControllers extends NextFTCOpMode {
         return null;
     }
 
-    public ParallelGroup runUptake = new ParallelGroup(new SetPower(lUptake, -1), new SetPower(rUptake, 1));
-    Runnable Uptake(){
+    Runnable fireFuction(){
         lUptake.setPower(-1);
         rUptake.setPower(1);
-        z = true;
-        return null;
-    }
-    Runnable UptakeOff(){
-        lUptake.setPower(0);
-        rUptake.setPower(0);
-        z = false;
+        Spindexer.INSTANCE.firingPosition.schedule();
         return null;
     }
 
-    Runnable switchIntakePos(){
-        if (x == 0){
-            Spindexer.INSTANCE.intakePos1.schedule();
-            x = 1;
-        } else if (x == 1){
-            Spindexer.INSTANCE.intakePos2.schedule();
-            x = 2;
-        } else if (x ==2){
-            Spindexer.INSTANCE.intakePos3.schedule();
-            x = 0;
-        }
-        return null;
-    }
-
-    Runnable switchOuttakePos(){
-        if (y == 0){
-            Spindexer.INSTANCE.outakePos1.schedule();
-            y = 1;
-        } else if (y == 1){
-            Spindexer.INSTANCE.outakePos2.schedule();
-            y = 2;
-        } else if (y ==2){
-            Spindexer.INSTANCE.outakePos3.schedule();
-            y = 0;
-        }
-        return null;
-    }
 }
+*/
