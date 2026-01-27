@@ -1,20 +1,22 @@
 package org.firstinspires.ftc.teamcode.subSystems;
-import static dev.nextftc.extensions.pedro.PedroComponent.follower;
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
 import dev.nextftc.core.subsystems.Subsystem;
 import dev.nextftc.core.units.Angle;
+import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.extensions.pedro.TurnBy;
 import dev.nextftc.hardware.impl.MotorEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.Teleop;
 
 import java.util.List;
 import java.util.Map;
@@ -22,26 +24,27 @@ import java.util.Map;
 public class Turret implements Subsystem {
     public static final Turret INSTANCE = new Turret();
     public boolean lockedOn = false;
-    private Turret() { }
+    public boolean zeroToggle = true;
+    private static DigitalChannel turretLimitSwitch = null;
+    private double encoderClicksPerDeg = 1425.1/360.0;
+    MotorEx turretMotor = new MotorEx("turretMotor");
+    private Turret() {
+        turretLimitSwitch = hardwareMap.get(DigitalChannel.class, "limitSwitch");
+    }
 
     private MotorEx yLinear = new MotorEx("ylinear");
     public double flyWheelGoal;
     public static boolean isStarted = false;
     LLResultTypes.FiducialResult lastResult = null;
 
-    KineticState targetStateY = new KineticState();
-    KineticState targetStateX = new KineticState();
+    KineticState turretState = new KineticState();
 
 
-    private ControlSystem yLinearControl = ControlSystem.builder()
+    private ControlSystem turretControl = ControlSystem.builder()
             .posPid(0.007, 0.0, 0.0001)
             .elevatorFF(0)
             .build();
 
-    private ControlSystem xLinearControl = ControlSystem.builder()
-            .posPid(0.004, 0.0, 0.0001)
-            .elevatorFF(0)
-            .build();
 
     public void lockOnUpdate(Limelight3A limelight, Telemetry telemetry){
 
@@ -114,6 +117,42 @@ public class Turret implements Subsystem {
 
     }
 
+    public void lockOnTurret(Limelight3A limelight, Telemetry telemetry){
+        LLResult result = limelight.getLatestResult();
+
+
+        if (result != null) {
+
+            if (result.isValid()) {
+                List<LLResultTypes.FiducialResult> feducialResults =  result.getFiducialResults();
+                //telemetry.addData("Tx:", feducialResults.get(0).getTargetXDegrees());
+                lastResult = feducialResults.get(0);
+
+                if (lastResult != null){
+
+                    telemetry.addData("Camera Pose Target Space: ", lastResult.getCameraPoseTargetSpace());
+
+                    telemetry.addData("Function y: ", flyWheelGoal);
+
+                    telemetry.addData("locked on: ", lockedOn);
+
+                    telemetry.addData("robot Yaw: ", lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES));
+                    if(turretMotor.getCurrentPosition() < 90 * encoderClicksPerDeg && turretMotor.getCurrentPosition() > 90 * encoderClicksPerDeg)
+                        turretControl.setGoal(new KineticState( -Math.toDegrees(PedroComponent.follower().getHeading()) * encoderClicksPerDeg));
+                    else
+                        turretControl.setGoal(new KineticState(0));
+                }
+            }
+        }
+
+        if(!turretLimitSwitch.getState() && zeroToggle){
+            turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            zeroToggle = false;
+        }else{
+            zeroToggle = true;
+        }
+    }
+
     public int getIndex(Limelight3A limelight){
         LLResult result = limelight.getLatestResult();
         Map<String, Double> Data = null;
@@ -129,12 +168,6 @@ public class Turret implements Subsystem {
         }
         return 0;
     }
-    public void setYLinear(double ty){
-        double encoderClicksPerRev = 1440d / 360d;
-        double target =  (encoderClicksPerRev * ty);
-        targetStateY = new KineticState(yLinear.getState().getPosition() + target);
-        yLinearControl.setGoal(targetStateY);
-    }
 
     @Override
     public void initialize() {
@@ -142,5 +175,6 @@ public class Turret implements Subsystem {
     }
     @Override
     public void periodic() {
+        Turret.INSTANCE.turretControl.calculate(turretState);
     }
 }
