@@ -9,10 +9,12 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
+import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.subsystems.Subsystem;
 import dev.nextftc.core.units.Angle;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.extensions.pedro.TurnBy;
+import dev.nextftc.hardware.controllable.RunToPosition;
 import dev.nextftc.hardware.impl.MotorEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -26,27 +28,29 @@ public class Turret implements Subsystem {
     public boolean lockedOn = false;
     public boolean zeroToggle = true;
     private static DigitalChannel turretLimitSwitch = null;
-    private double encoderClicksPerDeg = 1425.1/360.0;
-    MotorEx turretMotor = new MotorEx("turretMotor");
+    private double encoderClicksPerDeg = 5108 / 360.0;
+
     private Turret() {
-        turretLimitSwitch = hardwareMap.get(DigitalChannel.class, "limitSwitch");
     }
 
-    private MotorEx yLinear = new MotorEx("ylinear");
+    public MotorEx turretMotor = new MotorEx("turretMotor");
+
     public double flyWheelGoal;
     public static boolean isStarted = false;
     LLResultTypes.FiducialResult lastResult = null;
 
     KineticState turretState = new KineticState();
 
-
-    private ControlSystem turretControl = ControlSystem.builder()
-            .posPid(0.007, 0.0, 0.0001)
+    public ControlSystem turretControl = ControlSystem.builder()
+            .posPid(0.008, 0.0, 0.0001)
             .elevatorFF(0)
             .build();
 
 
-    public void lockOnUpdate(Limelight3A limelight, Telemetry telemetry){
+    public final Command goal0Turret = new RunToPosition(turretControl, 0).requires(this).named("goal0Turret");
+    public final Command goal150Turret = new RunToPosition(turretControl, -800).requires(this).named("goal150Turret");
+
+    public void lockOnUpdate(Limelight3A limelight, Telemetry telemetry) {
 
         LLResult result = limelight.getLatestResult();
 
@@ -54,17 +58,17 @@ public class Turret implements Subsystem {
         if (result != null) {
 
             if (result.isValid()) {
-                List<LLResultTypes.FiducialResult> feducialResults =  result.getFiducialResults();
+                List<LLResultTypes.FiducialResult> feducialResults = result.getFiducialResults();
                 //telemetry.addData("Tx:", feducialResults.get(0).getTargetXDegrees());
                 lastResult = feducialResults.get(0);
 
-                if (lastResult != null){
+                if (lastResult != null) {
 
                     telemetry.addData("Camera Pose Target Space: ", lastResult.getCameraPoseTargetSpace());
 
-                    if(lastResult.getCameraPoseTargetSpace().getPosition().z > -3){
+                    if (lastResult.getCameraPoseTargetSpace().getPosition().z > -3) {
                         flyWheelGoal = 184.4566 * Math.pow(lastResult.getCameraPoseTargetSpace().getPosition().z, 2) + 534.06469 * (lastResult.getCameraPoseTargetSpace().getPosition().z) + 1545.52227;
-                    }else if(lastResult.getCameraPoseTargetSpace().getPosition().z < -3 && lastResult.getCameraPoseTargetSpace().getPosition().z > -6){
+                    } else if (lastResult.getCameraPoseTargetSpace().getPosition().z < -3 && lastResult.getCameraPoseTargetSpace().getPosition().z > -6) {
                         flyWheelGoal = -117.70721 * lastResult.getCameraPoseTargetSpace().getPosition().z + 1157.50788;
                     }
 
@@ -74,7 +78,7 @@ public class Turret implements Subsystem {
 
                     telemetry.addData("robot Yaw: ", lastResult.getTargetPoseRobotSpace().getOrientation().getYaw());
 
-                    if((lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES) < -2 || lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES) < -2) && lockedOn){
+                    if ((lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES) < -2 || lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES) < -2) && lockedOn) {
                         new TurnBy(Angle.fromDeg(lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES))).schedule();
                     }
                 }
@@ -84,7 +88,8 @@ public class Turret implements Subsystem {
         //telemetry.update();
 
     }
-    public void lockOn(Limelight3A limelight, Telemetry telemetry){
+
+    public void lockOn(Limelight3A limelight, Telemetry telemetry) {
 
         LLResult result = limelight.getLatestResult();
 
@@ -92,11 +97,11 @@ public class Turret implements Subsystem {
         if (result != null) {
 
             if (result.isValid()) {
-                List<LLResultTypes.FiducialResult> feducialResults =  result.getFiducialResults();
+                List<LLResultTypes.FiducialResult> feducialResults = result.getFiducialResults();
                 //telemetry.addData("Tx:", feducialResults.get(0).getTargetXDegrees());
                 lastResult = feducialResults.get(0);
 
-                if (lastResult != null){
+                if (lastResult != null) {
 
                     telemetry.addData("Camera Pose Target Space: ", lastResult.getCameraPoseTargetSpace());
 
@@ -106,7 +111,7 @@ public class Turret implements Subsystem {
 
                     telemetry.addData("robot Yaw: ", lastResult.getTargetPoseRobotSpace().getOrientation().getYaw());
 
-                    if((lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES) < -2 || lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES) < -2) && lockedOn){
+                    if ((lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES) < -2 || lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES) < -2) && lockedOn) {
                         new TurnBy(Angle.fromDeg(lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES))).schedule();
                     }
                 }
@@ -117,18 +122,18 @@ public class Turret implements Subsystem {
 
     }
 
-    public void lockOnTurret(Limelight3A limelight, Telemetry telemetry){
-        LLResult result = limelight.getLatestResult();
 
+    public void lockOnTurret(Limelight3A limelight, Telemetry telemetry) {
+        LLResult result = limelight.getLatestResult();
 
         if (result != null) {
 
             if (result.isValid()) {
-                List<LLResultTypes.FiducialResult> feducialResults =  result.getFiducialResults();
+                List<LLResultTypes.FiducialResult> feducialResults = result.getFiducialResults();
                 //telemetry.addData("Tx:", feducialResults.get(0).getTargetXDegrees());
                 lastResult = feducialResults.get(0);
 
-                if (lastResult != null){
+                if (lastResult != null) {
 
                     telemetry.addData("Camera Pose Target Space: ", lastResult.getCameraPoseTargetSpace());
 
@@ -136,45 +141,74 @@ public class Turret implements Subsystem {
 
                     telemetry.addData("locked on: ", lockedOn);
 
-                    telemetry.addData("robot Yaw: ", lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES));
-                    if(turretMotor.getCurrentPosition() < 90 * encoderClicksPerDeg && turretMotor.getCurrentPosition() > 90 * encoderClicksPerDeg)
-                        turretControl.setGoal(new KineticState( -Math.toDegrees(PedroComponent.follower().getHeading()) * encoderClicksPerDeg));
-                    else
-                        turretControl.setGoal(new KineticState(0));
+                    telemetry.addData("camera Yaw: ", lastResult.getCameraPoseTargetSpace().getOrientation().getYaw(AngleUnit.DEGREES));
+
+                    telemetry.addData("tagetX Degree: ", lastResult.getTargetXDegrees());
+
+                    telemetry.addData("Equation Goal: ", ((-Math.toDegrees(PedroComponent.follower().getHeading()) - lastResult.getTargetXDegrees()) * encoderClicksPerDeg));
+
+                    if (lastResult.getFiducialId() == 20 || lastResult.getFiducialId() == 24) {
+                        if (Math.toDegrees(PedroComponent.follower().getHeading()) <= 90 && Math.toDegrees(PedroComponent.follower().getHeading()) >= -90) {
+                            telemetry.addData("if", "");
+                            turretControl.setGoal(new KineticState((-Math.toDegrees(PedroComponent.follower().getHeading()) - lastResult.getTargetXDegrees()) * encoderClicksPerDeg));
+                        } else {
+                            goal0Turret.schedule();
+                            telemetry.addData("else", "");
+                        }
+                    } else {
+                        if (Math.toDegrees(PedroComponent.follower().getHeading()) <= 90 && Math.toDegrees(PedroComponent.follower().getHeading()) >= -90) {
+                            telemetry.addData("if", "");
+                            turretControl.setGoal(new KineticState(-Math.toDegrees(PedroComponent.follower().getHeading()) * encoderClicksPerDeg));
+                        } else {
+                            goal0Turret.schedule();
+                            telemetry.addData("else", "");
+                        }
+                    }
                 }
-            }
+            } else {
+                if (Math.toDegrees(PedroComponent.follower().getHeading()) <= 90 && Math.toDegrees(PedroComponent.follower().getHeading()) >= -90) {
+                    telemetry.addData("if", "");
+                    turretControl.setGoal(new KineticState(-Math.toDegrees(PedroComponent.follower().getHeading()) * encoderClicksPerDeg));
+                } else {
+                    goal0Turret.schedule();
+                    telemetry.addData("else", "");
+                }
         }
 
-        if(!turretLimitSwitch.getState() && zeroToggle){
+            telemetry.addData("Flywheel goal: ", flyWheelGoal);
+            telemetry.addData("Turret goal: ", turretControl.getGoal().getPosition());
+            telemetry.addData("Turret position: ", turretMotor.getCurrentPosition());
+            telemetry.addData("locked on: ", lockedOn);
+            telemetry.addData("Robot Heading: ", Math.toDegrees(PedroComponent.follower().getHeading()));
+
+            //telemetry.addData("robot Yaw: ", lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES));
+
+
+        }
+    }
+
+        public int getIndex (Limelight3A limelight){
+            LLResult result = limelight.getLatestResult();
+            Map<String, Double> Data = null;
+
+            if (result != null) {
+                List<LLResultTypes.FiducialResult> feducialResults = result.getFiducialResults();
+                //telemetry.addData("Tx:", feducialResults.get(0).getTargetXDegrees());
+                if (result.isValid()) {
+                    for (LLResultTypes.FiducialResult tag : feducialResults) {
+                        return tag.getFiducialId();
+                    }
+                }
+            }
+            return 0;
+        }
+
+        @Override
+        public void initialize () {
             turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            zeroToggle = false;
-        }else{
-            zeroToggle = true;
+        }
+        @Override
+        public void periodic () {
+            turretMotor.setPower(turretControl.calculate(turretMotor.getState()));
         }
     }
-
-    public int getIndex(Limelight3A limelight){
-        LLResult result = limelight.getLatestResult();
-        Map<String, Double> Data = null;
-
-        if (result != null) {
-            List<LLResultTypes.FiducialResult> feducialResults =  result.getFiducialResults();
-            //telemetry.addData("Tx:", feducialResults.get(0).getTargetXDegrees());
-            if (result.isValid()) {
-                for(LLResultTypes.FiducialResult tag : feducialResults){
-                    return tag.getFiducialId();
-                }
-            }
-        }
-        return 0;
-    }
-
-    @Override
-    public void initialize() {
-
-    }
-    @Override
-    public void periodic() {
-        Turret.INSTANCE.turretControl.calculate(turretState);
-    }
-}

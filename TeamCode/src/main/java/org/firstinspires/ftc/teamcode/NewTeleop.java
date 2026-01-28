@@ -124,8 +124,9 @@ public class NewTeleop extends NextFTCOpMode {
             rUptake.setPower(0);
         }
 
-        Turret.INSTANCE.lockOnUpdate(limelight, telemetry);
         FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
+
+        Turret.INSTANCE.lockOnTurret(limelight, telemetry);
 
     }
 
