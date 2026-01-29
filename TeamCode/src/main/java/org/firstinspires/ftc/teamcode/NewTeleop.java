@@ -80,7 +80,7 @@ public class NewTeleop extends NextFTCOpMode {
     public void onStartButtonPressed() {
         Spindexer.INSTANCE.isStarted = true;
         driverControlled.schedule();
-
+        Turret.INSTANCE.turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         fire.whenBecomesTrue(() -> fireFuction());
         resetSpindexer.whenBecomesTrue(() -> Spindexer.INSTANCE.intakePosition.schedule());
         button(() -> gamepad1.x)

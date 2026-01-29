@@ -129,29 +129,33 @@ public class Turret implements Subsystem {
         LLResult result = limelight.getLatestResult();
 
 
-        while(isBounded){
+        if(isBounded){
             if(result != null){
                 if(result.isValid()){
                     List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
                     lastResult = fiducialResults.get(0);
+                    if (lastResult.getTargetXDegrees() > -15 && lastResult.getTargetXDegrees() < 15) {
+                        lastHeading = Math.toDegrees(PedroComponent.follower().getHeading());
+                        lastTurretPose = turretMotor.getCurrentPosition();
+                    }
 
-                    if (lastResult.getTargetXDegrees() < -5){
+                    if (lastResult.getTargetXDegrees() < -5 && (turretControl.getGoal().getPosition() + 12) < 1196){
                         turretControl.setGoal(new KineticState(turretControl.getGoal().getPosition() +12));
                     }
-                    else if (lastResult.getTargetXDegrees() > 5){
+                    if (lastResult.getTargetXDegrees() > 5 && (turretControl.getGoal().getPosition() - 12) > -1196){
                         turretControl.setGoal(new KineticState(turretControl.getGoal().getPosition() -12));
                     }
 
-                    lastHeading = Math.toDegrees(PedroComponent.follower().getHeading());
 
-                }else{
-                    turretControl.setGoal(new KineticState(lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())));
+                }
+                if (((((lastTurretPose) - (lastHeading - Math.toDegrees(PedroComponent.follower().getHeading()))) * encoderClicksPerDeg) < 1196 && (((lastTurretPose) - (lastHeading - Math.toDegrees(PedroComponent.follower().getHeading()))) * encoderClicksPerDeg) > -1196)){
+                    turretControl.setGoal(new KineticState((lastTurretPose) + (lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * encoderClicksPerDeg));
                 }
             }
 
-            isBounded = ((turretControl.getGoal().getPosition() < 1196 || turretControl.getGoal().getPosition() > -1196) && (lastHeading * encoderClicksPerDeg < 1196 || lastHeading * encoderClicksPerDeg > -1196));
+            isBounded = ((turretControl.getGoal().getPosition() < 1196 || turretControl.getGoal().getPosition() > -1196) && ((((lastTurretPose) -(lastHeading - Math.toDegrees(PedroComponent.follower().getHeading()))) * encoderClicksPerDeg) < 1196 || (((lastTurretPose) -(lastHeading - Math.toDegrees(PedroComponent.follower().getHeading()))) * encoderClicksPerDeg) > -1196));
         }
-        while(!isBounded){
+        if(!isBounded){
             turretControl.setGoal(new KineticState(0));
             isBounded = ((turretControl.getGoal().getPosition() < 1196 || turretControl.getGoal().getPosition() > -1196) && (lastHeading * encoderClicksPerDeg < 1196 || lastHeading * encoderClicksPerDeg > -1196));
 
@@ -160,10 +164,11 @@ public class Turret implements Subsystem {
                     List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
                     lastResult = fiducialResults.get(0);
 
-                    lastHeading = Math.toDegrees(PedroComponent.follower().getHeading());
+                    if (lastResult.getTargetXDegrees() > -15 && lastResult.getTargetXDegrees() < 15) {
+                        lastHeading = Math.toDegrees(PedroComponent.follower().getHeading());
+                        lastTurretPose = turretMotor.getCurrentPosition();
+                    }
 
-                }else{
-                    turretControl.setGoal(new KineticState(lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())));
                 }
             }
 
