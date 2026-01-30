@@ -5,6 +5,7 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
@@ -15,6 +16,7 @@ import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.extensions.pedro.TurnBy;
 import dev.nextftc.hardware.controllable.RunToPosition;
 import dev.nextftc.hardware.impl.MotorEx;
+import dev.nextftc.hardware.impl.ServoEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -33,6 +35,7 @@ public class Turret implements Subsystem {
     }
 
     public MotorEx turretMotor = new MotorEx("turretMotor");
+    public ServoEx hood = new ServoEx("hood");
 
     public double flyWheelGoal;
     public static boolean isStarted = false;
@@ -41,7 +44,7 @@ public class Turret implements Subsystem {
     public double lastHeading = 0;
     public double lastTurretPose = 0;
     public boolean lockToggle;
-    LLResultTypes.FiducialResult lastResult = null;
+    public LLResultTypes.FiducialResult lastResult = null;
 
     KineticState turretState = new KineticState();
 
@@ -70,10 +73,15 @@ public class Turret implements Subsystem {
 
                     telemetry.addData("Camera Pose Target Space: ", lastResult.getCameraPoseTargetSpace());
 
-                    if (lastResult.getCameraPoseTargetSpace().getPosition().z > -3) {
-                        flyWheelGoal = 184.4566 * Math.pow(lastResult.getCameraPoseTargetSpace().getPosition().z, 2) + 534.06469 * (lastResult.getCameraPoseTargetSpace().getPosition().z) + 1545.52227;
-                    } else if (lastResult.getCameraPoseTargetSpace().getPosition().z < -3 && lastResult.getCameraPoseTargetSpace().getPosition().z > -6) {
-                        flyWheelGoal = -117.70721 * lastResult.getCameraPoseTargetSpace().getPosition().z + 1157.50788;
+                    if (lastResult.getCameraPoseTargetSpace().getPosition().z < -1.3 && lastResult.getCameraPoseTargetSpace().getPosition().z > -2.7) {
+                        hood.setPosition(.12);
+                        flyWheelGoal = -148.54471 * lastResult.getCameraPoseTargetSpace().getPosition().z + 949.51591;
+                    } else if (lastResult.getCameraPoseTargetSpace().getPosition().z > -1.3 && lastResult.getCameraPoseTargetSpace().getPosition().z < -0.8) {
+                        hood.setPosition(.065);
+                        flyWheelGoal = -247.70642 * lastResult.getCameraPoseTargetSpace().getPosition().z + 831.65138;
+                    } else if (lastResult.getCameraPoseTargetSpace().getPosition().z < -3) {
+                        hood.setPosition(.13);
+                        flyWheelGoal = -123.48178 * lastResult.getCameraPoseTargetSpace().getPosition().z + 1118.7247;
                     }
 
                     telemetry.addData("Function y: ", flyWheelGoal);
@@ -82,9 +90,9 @@ public class Turret implements Subsystem {
 
                     telemetry.addData("robot Yaw: ", lastResult.getTargetPoseRobotSpace().getOrientation().getYaw());
 
-                    if ((lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES) < -2 || lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES) < -2) && lockedOn ) {
+                    /*if ((lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES) < -2 || lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES) < -2) && lockedOn ) {
                         new TurnBy(Angle.fromDeg(lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES))).schedule();
-                    }
+                    }*/
                 }
             }
         }

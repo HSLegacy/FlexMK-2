@@ -31,7 +31,7 @@ public class FlyWheel implements Subsystem {
     public MotorEx rightFlyWheel = new MotorEx("rightFW");
 
     public double goal = 1100;
-    private ControlSystem FlyWheelControl = ControlSystem.builder()
+    public ControlSystem FlyWheelControl = ControlSystem.builder()
             .velPid(.011,0, 0.8) //.011, 0, .8
             .elevatorFF(0.03)
             .build();
