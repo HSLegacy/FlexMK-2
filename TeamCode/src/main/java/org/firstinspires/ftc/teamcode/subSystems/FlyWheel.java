@@ -28,7 +28,7 @@ public class FlyWheel implements Subsystem {
     }
 
     public MotorEx leftFlyWheel = new MotorEx("leftFW");
-    public MotorEx rightFlyWheel = new MotorEx("rightFW").reversed();
+    public MotorEx rightFlyWheel = new MotorEx("rightFW");
 
     public double goal = 1100;
     private ControlSystem FlyWheelControl = ControlSystem.builder()
