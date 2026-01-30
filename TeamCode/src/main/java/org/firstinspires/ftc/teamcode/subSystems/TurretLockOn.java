@@ -6,6 +6,12 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
+import java.util.List;
+import java.util.Map;
+
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
 import dev.nextftc.core.commands.Command;
@@ -16,20 +22,14 @@ import dev.nextftc.extensions.pedro.TurnBy;
 import dev.nextftc.hardware.controllable.RunToPosition;
 import dev.nextftc.hardware.impl.MotorEx;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-
-import java.util.List;
-import java.util.Map;
-
-public class Turret implements Subsystem {
-    public static final Turret INSTANCE = new Turret();
+public class TurretLockOn implements Subsystem {
+    public static final TurretLockOn INSTANCE = new TurretLockOn();
     public boolean lockedOn = false;
     public boolean zeroToggle = true;
     private static DigitalChannel turretLimitSwitch = null;
     public double encoderClicksPerDeg = 5081 / 360.0; //limits: -1197, 1197
 
-    private Turret() {
+    private TurretLockOn() {
     }
 
     public MotorEx turretMotor = new MotorEx("turretMotor");
@@ -175,6 +175,9 @@ public class Turret implements Subsystem {
         if (!isBounded) {
             turretControl.setGoal(new KineticState(0));
         }
+
+
+
 
             }
         }

@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
 import org.firstinspires.ftc.teamcode.subSystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subSystems.Turret;
+import org.firstinspires.ftc.teamcode.subSystems.TurretLockOn;
 
 import dev.nextftc.bindings.BindingManager;
 import dev.nextftc.bindings.Button;
@@ -47,6 +48,7 @@ public class NewTeleop extends NextFTCOpMode {
     CRServoEx rUptake = new CRServoEx("rUptake");
     CRServoEx lUptake = new CRServoEx("lUptake");
     ServoEx gate = new ServoEx("gate");
+    Turret turret = Turret.INSTANCE;
 
     LLResultTypes.FiducialResult lastResult = null;
     private DigitalChannel limitSwitch = null;
@@ -135,8 +137,9 @@ public class NewTeleop extends NextFTCOpMode {
         }
 
         FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
-        //Turret.INSTANCE.lockOnUpdate(limelight, telemetry);
-        Turret.INSTANCE.lockOnTurret(limelight, telemetry);
+
+        turret.lockOnUpdate(limelight, telemetry);
+        turret.lockOnTurret(limelight, telemetry);
 
     }
 
