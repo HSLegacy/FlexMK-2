@@ -11,6 +11,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
@@ -35,6 +36,7 @@ import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 import dev.nextftc.hardware.driving.DriverControlledCommand;
 import dev.nextftc.hardware.impl.CRServoEx;
+import dev.nextftc.hardware.impl.ServoEx;
 import dev.nextftc.hardware.powerable.SetPower;
 
 @TeleOp(name = "NewTeleOp")
@@ -44,6 +46,7 @@ public class NewTeleop extends NextFTCOpMode {
     CRServoEx intake = new CRServoEx("intake");
     CRServoEx rUptake = new CRServoEx("rUptake");
     CRServoEx lUptake = new CRServoEx("lUptake");
+    ServoEx gate = new ServoEx("gate");
 
     LLResultTypes.FiducialResult lastResult = null;
     private DigitalChannel limitSwitch = null;
@@ -98,7 +101,9 @@ public class NewTeleop extends NextFTCOpMode {
         button(() -> gamepad1.left_bumper)
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> intake.setPower(-1))
-                .whenBecomesFalse(() -> intake.setPower(0));
+                .whenBecomesTrue(() -> gate.setPosition(.97))
+                .whenBecomesFalse(() -> intake.setPower(0))
+                .whenBecomesFalse(() -> gate.setPosition(.75));
 
         button(() -> gamepad1.right_bumper)
                 .toggleOnBecomesTrue()
@@ -183,6 +188,14 @@ public class NewTeleop extends NextFTCOpMode {
         if ((((Turret.INSTANCE.lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * Turret.INSTANCE.encoderClicksPerDeg) + Turret.INSTANCE.turretControl.getGoal().getPosition()) < 1196 && (((Turret.INSTANCE.lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * Turret.INSTANCE.encoderClicksPerDeg) + Turret.INSTANCE.turretControl.getGoal().getPosition()) > -1196) {
             Turret.INSTANCE.turretControl.setGoal(new KineticState(((Turret.INSTANCE.lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * Turret.INSTANCE.encoderClicksPerDeg) + Turret.INSTANCE.turretControl.getGoal().getPosition()));
         }
+        return null;
+    }
+    Runnable turretCorrectOn() {
+        Turret.INSTANCE.lockToggle = false;
+        return null;
+    }
+    Runnable turretCorrectOff() {
+        Turret.INSTANCE.lockToggle = true;
         return null;
     }
 }

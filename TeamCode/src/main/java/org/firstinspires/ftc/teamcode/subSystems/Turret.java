@@ -141,37 +141,36 @@ public class Turret implements Subsystem {
         if (isBounded) {
             if (result != null) {
                 if (result.isValid()) {
-                    if (result.isValid()){
-                        List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
-                        lastResult = fiducialResults.get(0);
+                    List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
+                    lastResult = fiducialResults.get(0);
+                    telemetry.addData("tx ", lastResult.getTargetXDegrees());
+                    if (lastResult.getFiducialId() == 24) {
                         telemetry.addData("lastResult: ", lastResult);
-                        if (lastResult.getTargetXDegrees() < -5 && (turretControl.getGoal().getPosition() + 12) < 1196) {
-                            //turretControl.setGoal(new KineticState(turretControl.getGoal().getPosition() + 12));
-                        }
-                        if (lastResult.getTargetXDegrees() > 5 && (turretControl.getGoal().getPosition() - 12) > -1196) {
-                            //turretControl.setGoal(new KineticState(turretControl.getGoal().getPosition() - 12));
-                        }
-                        if (lastResult.getTargetXDegrees() < 5 && lastResult.getTargetXDegrees() > -5) {
+                        if ((lastResult.getTargetXDegrees() < -5 && (turretMotor.getMotor().getCurrentPosition() - lastResult.getTargetXDegrees() * encoderClicksPerDeg) < 1196)) {
+                            turretControl.setGoal(new KineticState(turretMotor.getMotor().getCurrentPosition() - (lastResult.getTargetXDegrees() * encoderClicksPerDeg) * .8));
                             lastHeading = Math.toDegrees(PedroComponent.follower().getHeading());
-                            lastTurretPose = turretMotor.getCurrentPosition();
-                            lockToggle = true;
+                        }
+                        if (lastResult.getTargetXDegrees() > 5 && (turretMotor.getMotor().getCurrentPosition() - lastResult.getTargetXDegrees() * encoderClicksPerDeg) > -1196) {
+                            turretControl.setGoal(new KineticState(turretMotor.getMotor().getCurrentPosition() - (lastResult.getTargetXDegrees() * encoderClicksPerDeg) * 0.8));
+                            lastHeading = Math.toDegrees(PedroComponent.follower().getHeading());
+                        }
+                        if (lastResult.getTargetXDegrees() < 13 && lastResult.getTargetXDegrees() > -13) {
+                            lastHeading = Math.toDegrees(PedroComponent.follower().getHeading());
+                        }
+
+
+                    }
+                    if (lastResult.getFiducialId() != 24){
+                        if ((((lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * encoderClicksPerDeg) + turretControl.getGoal().getPosition()) < 1196 && (((lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * encoderClicksPerDeg) + turretControl.getGoal().getPosition()) > -1196) {
+                            turretControl.setGoal(new KineticState(((lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * encoderClicksPerDeg) + turretMotor.getMotor().getCurrentPosition()));
                         }
                     }
-
                 }
-            if ((((lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * encoderClicksPerDeg) + turretControl.getGoal().getPosition()) < 1196 && (((lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * encoderClicksPerDeg) + turretControl.getGoal().getPosition()) > -1196 && lockToggle) {
-                //turretControl.setGoal(new KineticState(((lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * encoderClicksPerDeg) + turretControl.getGoal().getPosition()));
-                lockToggle = false;
-            }
-            if (result != null) {
-                if (result.isValid()) {
-                    if (lastResult.getTargetXDegrees() < 5 && lastResult.getTargetXDegrees() > -5) {
-                        lastHeading = Math.toDegrees(PedroComponent.follower().getHeading());
-                        lastTurretPose = turretMotor.getCurrentPosition();
-                        lockToggle = true;
+                if (!result.isValid()){
+                    if ((((lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * encoderClicksPerDeg) + turretControl.getGoal().getPosition()) < 1196 && (((lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * encoderClicksPerDeg) + turretControl.getGoal().getPosition()) > -1196) {
+                        turretControl.setGoal(new KineticState(((lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * encoderClicksPerDeg) + turretMotor.getMotor().getCurrentPosition()));
                     }
                 }
-            }
 
         if (!isBounded) {
             turretControl.setGoal(new KineticState(0));
@@ -179,75 +178,7 @@ public class Turret implements Subsystem {
 
 
 
-        /*
 
-        if (result != null) {
-
-            if (result.isValid()) {
-                List<LLResultTypes.FiducialResult> feducialResults = result.getFiducialResults();
-                //telemetry.addData("Tx:", feducialResults.get(0).getTargetXDegrees());
-                lastResult = feducialResults.get(0);
-
-                if (lastResult != null) {
-
-                    telemetry.addData("Camera Pose Target Space: ", lastResult.getCameraPoseTargetSpace());
-
-                    telemetry.addData("Function y: ", flyWheelGoal);
-
-                    telemetry.addData("locked on: ", lockedOn);
-
-                    telemetry.addData("camera Yaw: ", lastResult.getCameraPoseTargetSpace().getOrientation().getYaw(AngleUnit.DEGREES));
-
-                    telemetry.addData("tagetX Degree: ", lastResult.getTargetXDegrees());
-
-                    telemetry.addData("Equation Goal: ", (((-Math.toDegrees(PedroComponent.follower().getHeading()))) * encoderClicksPerDeg));
-
-
-
-
-                    if (lastResult.getFiducialId() == 20 || lastResult.getFiducialId() == 24) {
-                        if (lastResult.getTargetXDegrees() < 15 && lastResult.getTargetXDegrees() > -15) {
-                            lastHeading = ((-Math.toDegrees(PedroComponent.follower().getHeading())));
-                        }
-                        lastTurretPose = turretMotor.getCurrentPosition();
-                        if (lastResult.getTargetXDegrees() < -5 && (turretControl.getGoal().getPosition() + 12) < 1197){
-                            turretControl.setGoal(new KineticState(turretControl.getGoal().getPosition() +12));
-                        }
-                        else if (lastResult.getTargetXDegrees() > 5 && (turretControl.getGoal().getPosition() - 12) > -1197){
-                            turretControl.setGoal(new KineticState(turretControl.getGoal().getPosition() -12));
-                        }
-                        /*if ((Math.toDegrees(PedroComponent.follower().getHeading()) <= 90 && Math.toDegrees(PedroComponent.follower().getHeading()) >= -90) && (lastResult.getTargetXDegrees() < -1 || lastResult.getTargetXDegrees() > 1)) {
-                            telemetry.addData("if", "");
-                            turretControl.setGoal(new KineticState(((-Math.toDegrees(PedroComponent.follower().getHeading())) - lastResult.getCameraPoseTargetSpace().getOrientation().getYaw(AngleUnit.DEGREES)) * encoderClicksPerDeg));
-                        }
-                    }
-                    }
-                }else {
-                if (turretControl.getGoal().getPosition() < 1197 && turretControl.getGoal().getPosition() > -1197) {
-                    telemetry.addData("if", "");
-                    turretControl.setGoal(new KineticState(( (lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * encoderClicksPerDeg)+lastTurretPose));
-                }else if ((( (lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * encoderClicksPerDeg)+lastTurretPose) > 1196){
-                    turretControl.setGoal(new KineticState(1197));
-                }else if ((((lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * encoderClicksPerDeg)+lastTurretPose) < -1196){
-                    turretControl.setGoal(new KineticState(-1197));
-                }
-
-                if ((((lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * encoderClicksPerDeg)+lastTurretPose) < 1197 && (( (lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * encoderClicksPerDeg)+lastTurretPose) > -1197){
-                    turretControl.setGoal(new KineticState(( (lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * encoderClicksPerDeg)+lastTurretPose));
-                }
-
-
-                telemetry.addData("Flywheel goal: ", flyWheelGoal);
-                telemetry.addData("Turret goal: ", turretControl.getGoal().getPosition());
-                telemetry.addData("Turret position: ", turretMotor.getCurrentPosition());
-                telemetry.addData("locked on: ", lockedOn);
-                telemetry.addData("Robot Heading: ", Math.toDegrees(PedroComponent.follower().getHeading()));
-
-                //telemetry.addData("robot Yaw: ", lastResult.getTargetPoseRobotSpace().getOrientation().getYaw(AngleUnit.DEGREES));
-
-
-            }
-        }*/
             }
         }
     }
