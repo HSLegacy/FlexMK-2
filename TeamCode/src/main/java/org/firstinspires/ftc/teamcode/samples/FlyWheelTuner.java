@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.samples;
 
-import static org.firstinspires.ftc.teamcode.NewTeleop.limelight;
 import static java.lang.Math.abs;
 
 import dev.nextftc.control.KineticState;
@@ -8,12 +7,8 @@ import dev.nextftc.core.components.SubsystemComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.hardware.impl.ServoEx;
 
-import com.bylazar.configurables.annotations.Configurable;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
 import org.firstinspires.ftc.teamcode.subSystems.Turret;
 

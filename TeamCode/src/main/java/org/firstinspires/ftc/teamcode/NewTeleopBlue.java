@@ -29,11 +29,12 @@ import dev.nextftc.hardware.driving.DriverControlledCommand;
 import dev.nextftc.hardware.impl.CRServoEx;
 import dev.nextftc.hardware.impl.ServoEx;
 
-@TeleOp(name = "NewTeleOp")
+@TeleOp(name = "NewTeleOpBlue")
 
-public class NewTeleop extends NextFTCOpMode {
+public class NewTeleopBlue extends NextFTCOpMode {
 
     CRServoEx intake = new CRServoEx("intake");
+    CRServoEx intake2 = new CRServoEx("intake2");
     CRServoEx rUptake = new CRServoEx("rUptake");
     CRServoEx lUptake = new CRServoEx("lUptake");
     ServoEx gate = new ServoEx("gate");
@@ -60,7 +61,7 @@ public class NewTeleop extends NextFTCOpMode {
     );
 
 
-    public NewTeleop() {
+    public NewTeleopBlue() {
         addComponents(
                 new PedroComponent(Constants::createFollower),
                 new SubsystemComponent(FlyWheel.INSTANCE),
@@ -91,14 +92,18 @@ public class NewTeleop extends NextFTCOpMode {
 //blah
         button(() -> gamepad1.left_bumper)
                 .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> intake.setPower(-1))
+                .whenBecomesTrue(() -> intake.setPower(1))
+                .whenBecomesTrue(() -> intake2.setPower(-1))
                 .whenBecomesTrue(() -> gate.setPosition(.97))
                 .whenBecomesFalse(() -> intake.setPower(0))
+                .whenBecomesFalse(() -> intake2.setPower(0))
                 .whenBecomesFalse(() -> gate.setPosition(.75));
 
         button(() -> gamepad1.right_bumper)
                 .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> intake.setPower(1))
+                .whenBecomesTrue(() -> intake.setPower(-1))
+                .whenBecomesTrue(() -> intake2.setPower(1))
+                .whenBecomesFalse(() -> intake2.setPower(0))
                 .whenBecomesFalse(() -> intake.setPower(0));
         /*
         button(() -> gamepad1.y)
@@ -128,7 +133,7 @@ public class NewTeleop extends NextFTCOpMode {
         FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
 
         turret.lockOnUpdate(limelight, telemetry);
-        turret.lockOnTurret(limelight, telemetry);
+        turret.lockOnTurretBlue(limelight, telemetry);
 
     }
 
