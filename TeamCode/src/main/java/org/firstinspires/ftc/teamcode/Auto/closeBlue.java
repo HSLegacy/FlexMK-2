@@ -41,8 +41,7 @@ import java.util.Timer;
 public class closeBlue extends NextFTCOpMode {
     CRServoEx intake = new CRServoEx("intake");
     CRServoEx intake2 = new CRServoEx("intake2");
-    CRServoEx lUptake = new CRServoEx("lUptake");
-    CRServoEx rUptake = new CRServoEx("rUptake");
+    CRServoEx upTakeWheel = new CRServoEx("upTakeWheel");
     ServoEx gate = new ServoEx("gate");
 
     Turret turret = Turret.INSTANCE;
@@ -128,15 +127,17 @@ public class closeBlue extends NextFTCOpMode {
 
     public Command fire = new LambdaCommand()
             .setStart(() -> {
-                telemetry.addData("started", "it defeninitlky did the thing");
-                lUptake.setPower(-1);
-                rUptake.setPower(1);
+                upTakeWheel.setPower(1);
                 gate.setPosition(.75);
                 Spindexer.INSTANCE.firingPosition.schedule();
             });
     public Command openGate = new LambdaCommand()
             .setStart(() -> {
                 gate.setPosition(.97);
+            });
+    public Command closeGate = new LambdaCommand()
+            .setStart(() -> {
+                gate.setPosition(.75);
             });
     public closeBlue() {
         addComponents(
@@ -158,7 +159,8 @@ public class closeBlue extends NextFTCOpMode {
         FlyWheel.INSTANCE.off.schedule();
         buildPaths();
         follower().setStartingPose(startPose);
-        Spindexer.INSTANCE.intakePos1.schedule();
+        Spindexer.INSTANCE.intakePosition.schedule();
+        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turret.turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turret.turretControl.setGoal(new KineticState(0));
     }
@@ -167,24 +169,24 @@ public class closeBlue extends NextFTCOpMode {
             return new SequentialGroup(
                 new FollowPath(launchPath),
                 fire,
-                new Delay(2),
+                new Delay(3),
                 runIntake,
                 new FollowPath(spike21, false),
                 new FollowPath(spike22, false),
                 new FollowPath(launchPath2),
                 fire,
-                new Delay(2),
+                new Delay(3),
                 openGate,
                 new FollowPath(spike12, false),
                 new FollowPath(launchPath3),
                 fire,
-                new Delay(2),
+                new Delay(3),
                 openGate,
                 new FollowPath(spike31, false),
                 new FollowPath(spike32, false),
                 new FollowPath(launchPath4),
                 fire,
-                new Delay(2),
+                new Delay(3),
                 new FollowPath(parkPath)
         );
     }
@@ -207,11 +209,8 @@ public class closeBlue extends NextFTCOpMode {
             telemetry.addData("index", lastIndex);
         }
 
-        if(!limitSwitch.getState() && Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() != -45){
-            Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if(Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() < -1230 && Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() > -1250){
             Spindexer.INSTANCE.intakePosition.schedule();
-            lUptake.setPower(0);
-            rUptake.setPower(0);
         }
 
         FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);

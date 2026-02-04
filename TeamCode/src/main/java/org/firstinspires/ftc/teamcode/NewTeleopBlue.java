@@ -35,8 +35,7 @@ public class NewTeleopBlue extends NextFTCOpMode {
 
     CRServoEx intake = new CRServoEx("intake");
     CRServoEx intake2 = new CRServoEx("intake2");
-    CRServoEx rUptake = new CRServoEx("rUptake");
-    CRServoEx lUptake = new CRServoEx("lUptake");
+    CRServoEx upTakeWheel = new CRServoEx("upTakeWheel");
     ServoEx gate = new ServoEx("gate");
     Turret turret = Turret.INSTANCE;
 
@@ -75,6 +74,8 @@ public class NewTeleopBlue extends NextFTCOpMode {
 
     @Override
     public void onStartButtonPressed() {
+        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Spindexer.INSTANCE.intakePosition.schedule();
         Spindexer.INSTANCE.isStarted = true;
         driverControlled.schedule();
         Turret.INSTANCE.turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -95,6 +96,7 @@ public class NewTeleopBlue extends NextFTCOpMode {
                 .whenBecomesTrue(() -> intake.setPower(1))
                 .whenBecomesTrue(() -> intake2.setPower(-1))
                 .whenBecomesTrue(() -> gate.setPosition(.97))
+                .whenBecomesTrue(() -> upTakeWheel.setPower(0))
                 .whenBecomesFalse(() -> intake.setPower(0))
                 .whenBecomesFalse(() -> intake2.setPower(0))
                 .whenBecomesFalse(() -> gate.setPosition(.75));
@@ -123,11 +125,8 @@ public class NewTeleopBlue extends NextFTCOpMode {
         telemetry.addData("Flywheel Goal", Turret.INSTANCE.flyWheelGoal);
         telemetry.update();
 
-        if (!limitSwitch.getState() && Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() != 0) {
-            Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if(Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() < -1230 && Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() > -1250){
             Spindexer.INSTANCE.intakePosition.schedule();
-            lUptake.setPower(0);
-            rUptake.setPower(0);
         }
 
         FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
@@ -165,9 +164,9 @@ public class NewTeleopBlue extends NextFTCOpMode {
     }
 
     Runnable fireFuction() {
-        lUptake.setPower(-1);
-        rUptake.setPower(1);
-        Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() - 530));
+        upTakeWheel.setPower(1);
+        gate.setPosition(.75);
+        Spindexer.INSTANCE.firingPosition.schedule();
         return null;
     }
 

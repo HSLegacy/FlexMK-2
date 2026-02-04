@@ -12,6 +12,7 @@ import dev.nextftc.ftc.components.BulkReadComponent;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
@@ -30,6 +31,7 @@ public class spindexerTuner extends NextFTCOpMode {
 
     @Override
     public void onStartButtonPressed() {
+        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     @Override

@@ -36,7 +36,7 @@ public class Spindexer implements Subsystem {
     public MotorEx spindexer = new MotorEx("spindexer");
 
     public ControlSystem spindexerControl = ControlSystem.builder()
-            .posPid(0.005,0, 0)
+            .posPid(0.01,0, 0)
             .build();
 
 
@@ -52,8 +52,8 @@ public class Spindexer implements Subsystem {
     public final Command telopOffset = new RunToPosition(spindexerControl, -20).requires(this).named("outtakePos3");
 
     //New Spindexer pos stuff
-    public final Command intakePosition = new RunToPosition(spindexerControl, -45, 0).requires(this).named("intakePos1");
-    public final Command firingPosition = new RunToPosition(spindexerControl, -530, 0).requires(this).named("intakePos1");
+    public final Command intakePosition = new RunToPosition(spindexerControl, 0, 0).requires(this).named("intakePos1");
+    public final Command firingPosition = new RunToPosition(spindexerControl, -1240, 0).requires(this).named("intakePos1");
     public boolean isStarted = false;
 
     @Override

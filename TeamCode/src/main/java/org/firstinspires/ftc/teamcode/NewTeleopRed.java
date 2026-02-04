@@ -35,8 +35,7 @@ public class NewTeleopRed extends NextFTCOpMode {
 
     CRServoEx intake = new CRServoEx("intake");
     CRServoEx intake2 = new CRServoEx("intake2");
-    CRServoEx rUptake = new CRServoEx("rUptake");
-    CRServoEx lUptake = new CRServoEx("lUptake");
+    CRServoEx upTakeWheel = new CRServoEx("upTakeWheel");
     ServoEx gate = new ServoEx("gate");
     Turret turret = Turret.INSTANCE;
 
@@ -126,8 +125,7 @@ public class NewTeleopRed extends NextFTCOpMode {
         if (!limitSwitch.getState() && Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() != 0) {
             Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             Spindexer.INSTANCE.intakePosition.schedule();
-            lUptake.setPower(0);
-            rUptake.setPower(0);
+            upTakeWheel.setPower(0);
         }
 
         FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
@@ -165,8 +163,7 @@ public class NewTeleopRed extends NextFTCOpMode {
     }
 
     Runnable fireFuction() {
-        lUptake.setPower(-1);
-        rUptake.setPower(1);
+        upTakeWheel.setPower(1);
         Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() - 530));
         return null;
     }
