@@ -125,8 +125,13 @@ public class NewTeleopBlue extends NextFTCOpMode {
         telemetry.addData("Flywheel Goal", Turret.INSTANCE.flyWheelGoal);
         telemetry.update();
 
-        if(Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() < -1230 && Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() > -1250){
+        if(Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() < -1095 && Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() > -1120){
             Spindexer.INSTANCE.intakePosition.schedule();
+        }
+
+        if (!limitSwitch.getState() && Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() == 0){
+            Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(160));
         }
 
         FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
@@ -140,6 +145,8 @@ public class NewTeleopBlue extends NextFTCOpMode {
 
     @Override
     public void onInit() {
+        turret.turretControl.setGoal(new KineticState(0));
+        Spindexer.INSTANCE.intakePosition.schedule();
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
         limelight.start(); // This tells Limelight to start looking!
@@ -164,9 +171,11 @@ public class NewTeleopBlue extends NextFTCOpMode {
     }
 
     Runnable fireFuction() {
-        upTakeWheel.setPower(1);
-        gate.setPosition(.75);
-        Spindexer.INSTANCE.firingPosition.schedule();
+        if (gate.getPosition() == .75) {
+            upTakeWheel.setPower(1);
+            gate.setPosition(.75);
+            Spindexer.INSTANCE.firingPosition.schedule();
+        }
         return null;
     }
 

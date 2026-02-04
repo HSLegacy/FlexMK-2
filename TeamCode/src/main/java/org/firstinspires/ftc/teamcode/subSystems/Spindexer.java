@@ -53,7 +53,7 @@ public class Spindexer implements Subsystem {
 
     //New Spindexer pos stuff
     public final Command intakePosition = new RunToPosition(spindexerControl, 0, 0).requires(this).named("intakePos1");
-    public final Command firingPosition = new RunToPosition(spindexerControl, -1240, 0).requires(this).named("intakePos1");
+    public final Command firingPosition = new RunToPosition(spindexerControl, -1110, 0).requires(this).named("intakePos1");
     public boolean isStarted = false;
 
     @Override

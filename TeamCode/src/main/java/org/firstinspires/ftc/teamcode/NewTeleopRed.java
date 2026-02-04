@@ -74,6 +74,8 @@ public class NewTeleopRed extends NextFTCOpMode {
 
     @Override
     public void onStartButtonPressed() {
+        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Spindexer.INSTANCE.intakePosition.schedule();
         Spindexer.INSTANCE.isStarted = true;
         driverControlled.schedule();
         Turret.INSTANCE.turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -94,6 +96,7 @@ public class NewTeleopRed extends NextFTCOpMode {
                 .whenBecomesTrue(() -> intake.setPower(1))
                 .whenBecomesTrue(() -> intake2.setPower(-1))
                 .whenBecomesTrue(() -> gate.setPosition(.97))
+                .whenBecomesTrue(() -> upTakeWheel.setPower(0))
                 .whenBecomesFalse(() -> intake.setPower(0))
                 .whenBecomesFalse(() -> intake2.setPower(0))
                 .whenBecomesFalse(() -> gate.setPosition(.75));
@@ -122,10 +125,13 @@ public class NewTeleopRed extends NextFTCOpMode {
         telemetry.addData("Flywheel Goal", Turret.INSTANCE.flyWheelGoal);
         telemetry.update();
 
-        if (!limitSwitch.getState() && Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() != 0) {
-            Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if(Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() < -1100 && Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() > -1120){
             Spindexer.INSTANCE.intakePosition.schedule();
-            upTakeWheel.setPower(0);
+        }
+
+        if (!limitSwitch.getState() && Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() == 0){
+            Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(160));
         }
 
         FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
@@ -139,6 +145,8 @@ public class NewTeleopRed extends NextFTCOpMode {
 
     @Override
     public void onInit() {
+        Spindexer.INSTANCE.intakePosition.schedule();
+        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
         limelight.start(); // This tells Limelight to start looking!
@@ -163,8 +171,11 @@ public class NewTeleopRed extends NextFTCOpMode {
     }
 
     Runnable fireFuction() {
-        upTakeWheel.setPower(1);
-        Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() - 530));
+        if (gate.getPosition() == .75) {
+            upTakeWheel.setPower(1);
+            gate.setPosition(.75);
+            Spindexer.INSTANCE.firingPosition.schedule();
+        }
         return null;
     }
 
