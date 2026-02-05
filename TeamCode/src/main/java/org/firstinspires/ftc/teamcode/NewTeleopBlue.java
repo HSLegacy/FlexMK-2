@@ -78,6 +78,7 @@ public class NewTeleopBlue extends NextFTCOpMode {
         Spindexer.INSTANCE.intakePosition.schedule();
         Spindexer.INSTANCE.isStarted = true;
         driverControlled.schedule();
+        Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(160));
         Turret.INSTANCE.turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         fire.whenBecomesTrue(() -> fireFuction());
         rightTurret.whenBecomesTrue(() -> rightTurret());
@@ -97,8 +98,8 @@ public class NewTeleopBlue extends NextFTCOpMode {
                 .whenBecomesTrue(() -> intake2.setPower(-1))
                 .whenBecomesTrue(() -> gate.setPosition(.97))
                 .whenBecomesTrue(() -> upTakeWheel.setPower(0))
-                .whenBecomesFalse(() -> intake.setPower(0))
-                .whenBecomesFalse(() -> intake2.setPower(0))
+                .whenBecomesFalse(() -> intake.setPower(-1))
+                .whenBecomesFalse(() -> intake2.setPower(1))
                 .whenBecomesFalse(() -> gate.setPosition(.75));
 
         button(() -> gamepad1.right_bumper)
