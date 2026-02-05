@@ -74,7 +74,7 @@ public class closeBlue extends NextFTCOpMode {
         launchPath = follower().pathBuilder()
                 .addPath(new BezierLine(startPose, launchPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), launchPose.getHeading())
-                .addTemporalCallback(3.5, fire)
+                .addParametricCallback(.3, fire)
                 .build();
         spike21 = follower().pathBuilder()
                 .addPath(new BezierLine(launchPose2,spike2Spot1))
@@ -93,14 +93,16 @@ public class closeBlue extends NextFTCOpMode {
                 .setLinearHeadingInterpolation(spike1Spot1.getHeading(), spike1Spot2.getHeading())
                 .build();
         launchPath2 = follower().pathBuilder()
-                .addPath(new BezierCurve(spike1Spot2, launch2MidPoint, launchPose2))
+                .addPath(new BezierCurve(spike2Spot2, launch2MidPoint, launchPose2))
                 .setLinearHeadingInterpolation(spike1Spot2.getHeading(), launchPose2.getHeading())
-                .addParametricCallback(70, closeGate)
+                .addParametricCallback(.2, closeGate)
+                .addParametricCallback(.8, fire)
                 .build();
         launchPath3 = follower().pathBuilder()
-                .addPath(new BezierLine(spike2Spot2,launchPose))
+                .addPath(new BezierLine(spike1Spot2,launchPose))
                 .setLinearHeadingInterpolation(spike2Spot2.getHeading(), launchPose.getHeading())
-                .addParametricCallback(50, closeGate)
+                .addParametricCallback(.1, closeGate)
+                .addParametricCallback(.6, fire)
                 .build();
         spike31 = follower().pathBuilder()
                 .addPath(new BezierLine(launchPose32,spike3Spot1))
@@ -113,7 +115,8 @@ public class closeBlue extends NextFTCOpMode {
         launchPath41 = follower().pathBuilder()
                 .addPath(new BezierLine(spike3Spot2, launchPose32))
                 .setLinearHeadingInterpolation(spike3Spot2.getHeading(), launchPose32.getHeading())
-                .addParametricCallback(50, closeGate)
+                .addParametricCallback(.5, closeGate)
+                .addParametricCallback(.8, fire)
                 .build();
         parkPath = follower().pathBuilder()
                 .addPath(new BezierLine(launchPose32, parkPose))
@@ -145,6 +148,8 @@ public class closeBlue extends NextFTCOpMode {
     public Command closeGate = new LambdaCommand()
             .setStart(() -> {
                 gate.setPosition(.75);
+                intake.setPower(-1);
+                intake2.setPower(1);
             });
     public closeBlue() {
         addComponents(
@@ -175,24 +180,25 @@ public class closeBlue extends NextFTCOpMode {
     private Command autonomousRoutine() {
             return new SequentialGroup(
                 new FollowPath(launchPath),
-                new Delay(1),
+                new Delay(2),
                 runIntake,
                 new FollowPath(spike21, false),
                 new FollowPath(spike22, false, 0.8),
                 new FollowPath(launchPath2),
-                fire,
-                new Delay(3),
+                new Delay(3.5),
                 openGate,
+                runIntake,
                 new FollowPath(spike12, false, 0.8),
                 new FollowPath(launchPath3),
                 fire,
-                new Delay(3),
+                new Delay(3.5),
                 openGate,
+                runIntake,
                 new FollowPath(spike31, false),
                 new FollowPath(spike32, false, 0.8),
                 new FollowPath(launchPath41),
                 fire,
-                new Delay(3),
+                new Delay(3.5),
                 new FollowPath(parkPath)
         );
     }

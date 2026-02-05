@@ -41,8 +41,7 @@ import java.util.Timer;
 public class closeRed extends NextFTCOpMode {
     CRServoEx intake = new CRServoEx("intake");
     CRServoEx intake2 = new CRServoEx("intake2");
-    CRServoEx lUptake = new CRServoEx("lUptake");
-    CRServoEx rUptake = new CRServoEx("rUptake");
+    CRServoEx upTakeWheel = new CRServoEx("upTakeWheel");
     ServoEx gate = new ServoEx("gate");
 
     Turret turret = Turret.INSTANCE;
@@ -71,7 +70,9 @@ public class closeRed extends NextFTCOpMode {
             .mirror();
     private final Pose launchPose2 = new Pose(55, 85, Math.toRadians(180))
             .mirror();
-    private final Pose launchPose3 = new Pose(55, 85, Math.toRadians(180))
+    private final Pose launchPose31 = new Pose(55, 90, Math.toRadians(180))
+            .mirror();
+    private final Pose launchPose32 = new Pose(55, 105, Math.toRadians(180))
             .mirror();
     private final Pose spike3Spot1 = new Pose(38, 37, Math.toRadians(180))
             .mirror();
@@ -80,12 +81,13 @@ public class closeRed extends NextFTCOpMode {
     private final Pose parkPose = new Pose(55,130, Math.toRadians(180))
             .mirror();
 
-    public PathChain launchPath, spike11, spike12, launchPath2, parkPath, spike21, spike22, launchPath3, spike31, spike32, launchPath4;
+    public PathChain launchPath, spike11, spike12, launchPath2, parkPath, spike21, spike22, launchPath3, spike31, spike32, launchPath41, launchPath42, fillerPath;
 
     public void buildPaths() {
         launchPath = follower().pathBuilder()
                 .addPath(new BezierLine(startPose, launchPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), launchPose.getHeading())
+                .addParametricCallback(.3, fire)
                 .build();
         spike21 = follower().pathBuilder()
                 .addPath(new BezierLine(launchPose2,spike2Spot1))
@@ -94,7 +96,6 @@ public class closeRed extends NextFTCOpMode {
         spike22 = follower().pathBuilder()
                 .addPath(new BezierLine(spike2Spot1,spike2Spot2))
                 .setLinearHeadingInterpolation(spike2Spot1.getHeading(), spike2Spot2.getHeading())
-                .setBrakingStrength(1)
                 .build();
         spike11 = follower().pathBuilder()
                 .addPath(new BezierLine(launchPose, spike1Spot1))
@@ -105,29 +106,38 @@ public class closeRed extends NextFTCOpMode {
                 .setLinearHeadingInterpolation(spike1Spot1.getHeading(), spike1Spot2.getHeading())
                 .build();
         launchPath2 = follower().pathBuilder()
-                .addPath(new BezierCurve(spike1Spot2, launch2MidPoint, launchPose2))
+                .addPath(new BezierCurve(spike2Spot2, launch2MidPoint, launchPose2))
                 .setLinearHeadingInterpolation(spike1Spot2.getHeading(), launchPose2.getHeading())
-                .setBrakingStrength(1)
+                .addParametricCallback(.2, closeGate)
+                .addParametricCallback(.8, fire)
                 .build();
         launchPath3 = follower().pathBuilder()
-                .addPath(new BezierLine(spike2Spot2,launchPose3))
-                .setLinearHeadingInterpolation(spike2Spot2.getHeading(), launchPose3.getHeading())
+                .addPath(new BezierLine(spike1Spot2,launchPose))
+                .setLinearHeadingInterpolation(spike2Spot2.getHeading(), launchPose.getHeading())
+                .addParametricCallback(.1, closeGate)
+                .addParametricCallback(.6, fire)
                 .build();
         spike31 = follower().pathBuilder()
-                .addPath(new BezierLine(launchPose3,spike3Spot1))
-                .setLinearHeadingInterpolation(launchPose3.getHeading(), spike3Spot1.getHeading())
+                .addPath(new BezierLine(launchPose32,spike3Spot1))
+                .setLinearHeadingInterpolation(launchPose32.getHeading(), spike3Spot1.getHeading())
                 .build();
         spike32 = follower().pathBuilder()
                 .addPath(new BezierLine(spike3Spot1,spike3Spot2))
                 .setLinearHeadingInterpolation(spike3Spot1.getHeading(), spike3Spot2.getHeading())
                 .build();
-        launchPath4 = follower().pathBuilder()
-                .addPath(new BezierLine(spike3Spot2,launchPose))
-                .setLinearHeadingInterpolation(spike3Spot2.getHeading(), launchPose.getHeading())
+        launchPath41 = follower().pathBuilder()
+                .addPath(new BezierLine(spike3Spot2, launchPose32))
+                .setLinearHeadingInterpolation(spike3Spot2.getHeading(), launchPose32.getHeading())
+                .addParametricCallback(.5, closeGate)
+                .addParametricCallback(.8, fire)
                 .build();
         parkPath = follower().pathBuilder()
-                .addPath(new BezierLine(launchPose, parkPose))
-                .setLinearHeadingInterpolation(launchPose.getHeading(), parkPose.getHeading())
+                .addPath(new BezierLine(launchPose32, parkPose))
+                .setLinearHeadingInterpolation(launchPose32.getHeading(), parkPose.getHeading())
+                .build();
+        fillerPath = follower().pathBuilder()
+                .addPath(new BezierLine(PedroComponent.follower().getPose(), PedroComponent.follower().getPose()))
+                .setLinearHeadingInterpolation(PedroComponent.follower().getHeading(), PedroComponent.follower().getHeading())
                 .build();
     }
 
@@ -140,15 +150,19 @@ public class closeRed extends NextFTCOpMode {
 
     public Command fire = new LambdaCommand()
             .setStart(() -> {
-                telemetry.addData("started", "it defeninitlky did the thing");
-                lUptake.setPower(-1);
-                rUptake.setPower(1);
+                upTakeWheel.setPower(1);
                 gate.setPosition(.75);
                 Spindexer.INSTANCE.firingPosition.schedule();
             });
     public Command openGate = new LambdaCommand()
             .setStart(() -> {
                 gate.setPosition(.97);
+            });
+    public Command closeGate = new LambdaCommand()
+            .setStart(() -> {
+                gate.setPosition(.75);
+                intake.setPower(-1);
+                intake2.setPower(1);
             });
     public closeRed() {
         addComponents(
@@ -170,7 +184,8 @@ public class closeRed extends NextFTCOpMode {
         FlyWheel.INSTANCE.off.schedule();
         buildPaths();
         follower().setStartingPose(startPose);
-        Spindexer.INSTANCE.intakePos1.schedule();
+        Spindexer.INSTANCE.intakePosition.schedule();
+        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turret.turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turret.turretControl.setGoal(new KineticState(0));
     }
@@ -178,25 +193,25 @@ public class closeRed extends NextFTCOpMode {
     private Command autonomousRoutine() {
         return new SequentialGroup(
                 new FollowPath(launchPath),
-                fire,
                 new Delay(2),
                 runIntake,
                 new FollowPath(spike21, false),
-                new FollowPath(spike22, false),
+                new FollowPath(spike22, false, 0.8),
                 new FollowPath(launchPath2),
-                fire,
-                new Delay(2),
+                new Delay(3.5),
                 openGate,
-                new FollowPath(spike12, false),
+                runIntake,
+                new FollowPath(spike12, false, 0.8),
                 new FollowPath(launchPath3),
                 fire,
-                new Delay(2),
+                new Delay(3.5),
                 openGate,
+                runIntake,
                 new FollowPath(spike31, false),
-                new FollowPath(spike32, false),
-                new FollowPath(launchPath4),
+                new FollowPath(spike32, false, 0.8),
+                new FollowPath(launchPath41),
                 fire,
-                new Delay(2),
+                new Delay(3.5),
                 new FollowPath(parkPath)
         );
     }
@@ -205,6 +220,7 @@ public class closeRed extends NextFTCOpMode {
     public void onStartButtonPressed() {
         autonomousRoutine().schedule();
         turret.flyWheelGoal = 1200;
+        turret.lastHeading = 0;
         turret.hood.setPosition(.12);
         turret.turretControl.setGoal(new KineticState(500));
         Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -219,12 +235,10 @@ public class closeRed extends NextFTCOpMode {
             telemetry.addData("index", lastIndex);
         }
 
-        if(!limitSwitch.getState() && Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() != -45){
-            Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            Spindexer.INSTANCE.intakePosition.schedule();
-            lUptake.setPower(0);
-            rUptake.setPower(0);
+        if(Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() < -1095 && Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() > -1120){
+            Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(180));
         }
+
 
         FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
 
