@@ -83,7 +83,7 @@ public class NewTeleopRed extends NextFTCOpMode {
         rightTurret.whenBecomesTrue(() -> rightTurret());
         leftTurret.whenBecomesTrue(() -> leftTurret());
         lockOn.whenBecomesTrue(() -> lockOn());
-        resetSpindexer.whenBecomesTrue(() -> Spindexer.INSTANCE.intakePosition.schedule());
+        resetSpindexer.whenBecomesTrue(() -> Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(160)));
         button(() -> gamepad1.x)
                 .whenBecomesTrue(() -> follower().setPose(new Pose(0, 0, 0)));
         button(() -> gamepad1.b)
@@ -126,14 +126,14 @@ public class NewTeleopRed extends NextFTCOpMode {
         telemetry.update();
 
         if(Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() < -1100 && Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() > -1120){
-            Spindexer.INSTANCE.intakePosition.schedule();
+            Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(160));
         }
-
+    /*
         if (!limitSwitch.getState() && Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() == 0){
             Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(160));
         }
-
+    */
         FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
 
         turret.lockOnUpdate(limelight, telemetry);
