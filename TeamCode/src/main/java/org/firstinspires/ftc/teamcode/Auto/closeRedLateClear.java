@@ -1,10 +1,24 @@
 package org.firstinspires.ftc.teamcode.Auto;
+
+import static dev.nextftc.extensions.pedro.PedroComponent.follower;
+
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierCurve;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
 import org.firstinspires.ftc.teamcode.subSystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subSystems.Turret;
-import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
 
-
-import static java.lang.Math.abs;
+import java.util.Timer;
 
 import dev.nextftc.control.KineticState;
 import dev.nextftc.core.commands.Command;
@@ -19,26 +33,9 @@ import dev.nextftc.ftc.components.BulkReadComponent;
 import dev.nextftc.hardware.impl.CRServoEx;
 import dev.nextftc.hardware.impl.ServoEx;
 
-import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierCurve;
-import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
+@Autonomous(name = "closeRedLateClear")
 
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-
-import static dev.nextftc.extensions.pedro.PedroComponent.follower;
-
-import java.util.Timer;
-
-@Autonomous(name = "closeRed")
-
-public class closeRed extends NextFTCOpMode {
+public class closeRedLateClear extends NextFTCOpMode {
     CRServoEx intake = new CRServoEx("intake");
     CRServoEx intake2 = new CRServoEx("intake2");
     CRServoEx upTakeWheel = new CRServoEx("upTakeWheel");
@@ -72,9 +69,9 @@ public class closeRed extends NextFTCOpMode {
             .mirror();
     private final Pose launchPose31 = new Pose(55, 90, Math.toRadians(180))
             .mirror();
-    private final Pose launchPose32 = new Pose(55, 105, Math.toRadians(180))
+    private final Pose launchPose32 = new Pose(55, 107, Math.toRadians(180))
             .mirror();
-    private final Pose spike3Spot1 = new Pose(38, 37, Math.toRadians(180))
+    private final Pose spike3Spot1 = new Pose(39, 37, Math.toRadians(180))
             .mirror();
     private final Pose spike3Spot2 = new Pose(18, 37, Math.toRadians(180))
             .mirror();
@@ -90,8 +87,8 @@ public class closeRed extends NextFTCOpMode {
                 .addParametricCallback(.3, fire)
                 .build();
         spike21 = follower().pathBuilder()
-                .addPath(new BezierLine(launchPose2,spike2Spot1))
-                .setLinearHeadingInterpolation(launchPose2.getHeading(), spike2Spot1.getHeading())
+                .addPath(new BezierLine(launchPose,spike2Spot1))
+                .setLinearHeadingInterpolation(launchPose.getHeading(), spike2Spot1.getHeading())
                 .build();
         spike22 = follower().pathBuilder()
                 .addPath(new BezierLine(spike2Spot1,spike2Spot2))
@@ -102,8 +99,8 @@ public class closeRed extends NextFTCOpMode {
                 .setLinearHeadingInterpolation(launchPose.getHeading(), spike1Spot1.getHeading())
                 .build();
         spike12 = follower().pathBuilder()
-                .addPath(new BezierLine(spike1Spot1, spike1Spot2))
-                .setLinearHeadingInterpolation(spike1Spot1.getHeading(), spike1Spot2.getHeading())
+                .addPath(new BezierLine(launchPose, spike1Spot2))
+                .setLinearHeadingInterpolation(launchPose.getHeading(), spike1Spot2.getHeading())
                 .build();
         launchPath2 = follower().pathBuilder()
                 .addPath(new BezierCurve(spike2Spot2, launch2MidPoint, launchPose2))
@@ -113,13 +110,13 @@ public class closeRed extends NextFTCOpMode {
                 .build();
         launchPath3 = follower().pathBuilder()
                 .addPath(new BezierLine(spike1Spot2,launchPose))
-                .setLinearHeadingInterpolation(spike2Spot2.getHeading(), launchPose.getHeading())
+                .setLinearHeadingInterpolation(spike1Spot2.getHeading(), launchPose.getHeading())
                 .addParametricCallback(.1, closeGate)
                 .addParametricCallback(.6, fire)
                 .build();
         spike31 = follower().pathBuilder()
-                .addPath(new BezierLine(launchPose32,spike3Spot1))
-                .setLinearHeadingInterpolation(launchPose32.getHeading(), spike3Spot1.getHeading())
+                .addPath(new BezierLine(launchPose2,spike3Spot1))
+                .setLinearHeadingInterpolation(launchPose2.getHeading(), spike3Spot1.getHeading())
                 .build();
         spike32 = follower().pathBuilder()
                 .addPath(new BezierLine(spike3Spot1,spike3Spot2))
@@ -164,7 +161,7 @@ public class closeRed extends NextFTCOpMode {
                 intake.setPower(-1);
                 intake2.setPower(1);
             });
-    public closeRed() {
+    public closeRedLateClear() {
         addComponents(
                 new SubsystemComponent(Spindexer.INSTANCE),
                 new SubsystemComponent(Turret.INSTANCE),
@@ -191,9 +188,15 @@ public class closeRed extends NextFTCOpMode {
     }
 
     private Command autonomousRoutine() {
-        return new SequentialGroup(
+            return new SequentialGroup(
                 new FollowPath(launchPath),
                 new Delay(2),
+                openGate,
+                runIntake,
+                new FollowPath(spike12, false, 0.8),
+                new FollowPath(launchPath3),
+                new Delay(3.5),
+                openGate,
                 runIntake,
                 new FollowPath(spike21, false),
                 new FollowPath(spike22, false, 0.8),
@@ -201,16 +204,9 @@ public class closeRed extends NextFTCOpMode {
                 new Delay(3.5),
                 openGate,
                 runIntake,
-                new FollowPath(spike12, false, 0.8),
-                new FollowPath(launchPath3),
-                fire,
-                new Delay(3.5),
-                openGate,
-                runIntake,
                 new FollowPath(spike31, false),
                 new FollowPath(spike32, false, 0.8),
                 new FollowPath(launchPath41),
-                fire,
                 new Delay(3.5),
                 new FollowPath(parkPath)
         );
