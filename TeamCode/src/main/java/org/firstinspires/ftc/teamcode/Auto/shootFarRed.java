@@ -1,9 +1,22 @@
 package org.firstinspires.ftc.teamcode.Auto;
+
+import static dev.nextftc.extensions.pedro.PedroComponent.follower;
+
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
 import org.firstinspires.ftc.teamcode.subSystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subSystems.Turret;
-import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
 
-import static java.lang.Math.abs;
+import java.util.Timer;
 
 import dev.nextftc.control.KineticState;
 import dev.nextftc.core.commands.Command;
@@ -17,21 +30,6 @@ import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 import dev.nextftc.hardware.impl.CRServoEx;
 import dev.nextftc.hardware.impl.ServoEx;
-
-import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
-
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-
-import static dev.nextftc.extensions.pedro.PedroComponent.follower;
-
-import java.util.Timer;
 
 @Autonomous(name = "shootFarRed")
 
@@ -49,20 +47,13 @@ public class shootFarRed extends NextFTCOpMode {
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
     private int lastIndex = 0;
-    private final Pose startPose = new Pose(52, 9, Math.toRadians(180))
-            .mirror();
-    private final Pose launchPose = new Pose(52, 15, Math.toRadians(180))
-            .mirror();
-    private final Pose subStationPickUpPose1 = new Pose(10.5, 20, Math.toRadians(200))
-            .mirror();
-    private final Pose subStationPickUpPose2 = new Pose(9.5, 11, Math.toRadians(210))
-            .mirror();
-    private final Pose spike3spot1 = new Pose(35, 35, Math.toRadians(180))
-            .mirror();
-    private final Pose spike3spot2 = new Pose(15, 35, Math.toRadians(180))
-            .mirror();
-    private final Pose parkPose = new Pose(50,25, Math.toRadians(180))
-            .mirror();
+    private final Pose startPose = new Pose(52, 9, Math.toRadians(180)).mirror();
+    private final Pose launchPose = new Pose(52, 15, Math.toRadians(180)).mirror();
+    private final Pose subStationPickUpPose1 = new Pose(10, 20, Math.toRadians(200)).mirror();
+    private final Pose subStationPickUpPose2 = new Pose(9, 11, Math.toRadians(210)).mirror();
+    private final Pose spike3spot1 = new Pose(35, 35, Math.toRadians(180)).mirror();
+    private final Pose spike3spot2 = new Pose(15, 35, Math.toRadians(180)).mirror();
+    private final Pose parkPose = new Pose(50,25, Math.toRadians(180)).mirror();
 
     public PathChain launchPath, parkPath, sub1Path, sub2Path, spike31, spike32, launchPath2;
 
@@ -123,6 +114,7 @@ public class shootFarRed extends NextFTCOpMode {
                 intake.setPower(-1);
                 intake2.setPower(1);
             });
+
     public shootFarRed() {
         addComponents(
                 new SubsystemComponent(Spindexer.INSTANCE),
@@ -169,7 +161,7 @@ public class shootFarRed extends NextFTCOpMode {
                 new FollowPath(spike31),
                 new FollowPath(spike32, true, .7),
                 new FollowPath(launchPath2),
-                new Delay(4),
+                new Delay(6),
                 new FollowPath(parkPath)
         );
     }
@@ -178,8 +170,9 @@ public class shootFarRed extends NextFTCOpMode {
     public void onStartButtonPressed() {
         autonomousRoutine().schedule();
         turret.flyWheelGoal = 1200;
-        turret.lastHeading = 0;
+        turret.lastHeading = 45;
         turret.hood.setPosition(.12);
+        turret.turretControl.setGoal(new KineticState(1000));
         Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         Spindexer.INSTANCE.isStarted = true;
     }
@@ -204,6 +197,7 @@ public class shootFarRed extends NextFTCOpMode {
         telemetry.addData("spindexer Pos", Spindexer.INSTANCE.spindexer.getCurrentPosition());
         telemetry.addData("spindexer Goal", Spindexer.INSTANCE.spindexerControl.getGoal().getPosition());
         telemetry.addData("Flywheel Goal", Turret.INSTANCE.flyWheelGoal);
+        telemetry.addData("Turret Goal", turret.turretControl.getGoal().getPosition());
         telemetry.update();
     }
 

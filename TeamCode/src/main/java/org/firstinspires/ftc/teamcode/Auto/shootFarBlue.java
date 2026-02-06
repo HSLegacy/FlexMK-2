@@ -174,7 +174,7 @@ public class shootFarBlue extends NextFTCOpMode {
                 new FollowPath(spike31),
                 new FollowPath(spike32, true, .7),
                 new FollowPath(launchPath2),
-                new Delay(4),
+                new Delay(6),
                 new FollowPath(parkPath)
         );
     }
@@ -183,7 +183,7 @@ public class shootFarBlue extends NextFTCOpMode {
     public void onStartButtonPressed() {
         autonomousRoutine().schedule();
         turret.flyWheelGoal = 1200;
-        turret.lastHeading = 0;
+        turret.lastHeading = 135;
         turret.hood.setPosition(.12);
         turret.turretControl.setGoal(new KineticState(-1000));
         Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

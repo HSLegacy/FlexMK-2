@@ -220,7 +220,7 @@ public class closeRed extends NextFTCOpMode {
     public void onStartButtonPressed() {
         autonomousRoutine().schedule();
         turret.flyWheelGoal = 1200;
-        turret.lastHeading = 0;
+        turret.lastHeading = 45;
         turret.hood.setPosition(.12);
         turret.turretControl.setGoal(new KineticState(500));
         Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
