@@ -74,7 +74,6 @@ public class NewTeleopBlue extends NextFTCOpMode {
 
     @Override
     public void onStartButtonPressed() {
-        Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         Spindexer.INSTANCE.intakePosition.schedule();
         Spindexer.INSTANCE.isStarted = true;
         driverControlled.schedule();
@@ -126,7 +125,7 @@ public class NewTeleopBlue extends NextFTCOpMode {
         telemetry.addData("Flywheel Goal", Turret.INSTANCE.flyWheelGoal);
         telemetry.update();
 
-        if(Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() < -1095 && Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() > -1120){
+        if(Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() < -1100 && Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() > -1120){
             Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(160));
         }
 
