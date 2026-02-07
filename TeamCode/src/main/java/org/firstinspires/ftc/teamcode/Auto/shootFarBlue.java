@@ -91,13 +91,13 @@ public class shootFarBlue extends NextFTCOpMode {
                 .addPath(new BezierLine(subStationPickUpPose2, launchPose))
                 .setLinearHeadingInterpolation(subStationPickUpPose2.getHeading(), launchPose.getHeading())
                 .addParametricCallback(.2, closeGate)
-                .addParametricCallback(.6, fire)
+                .addParametricCallback(.9, fire)
                 .build();
         launchPath2 = follower().pathBuilder()
                 .addPath(new BezierLine(spike3spot2, launchPose))
                 .setLinearHeadingInterpolation(spike3spot2.getHeading(), launchPose.getHeading())
                 .addParametricCallback(.2, closeGate)
-                .addParametricCallback(.7, fire)
+                .addParametricCallback(.9, fire)
                 .build();
         parkPath = follower().pathBuilder()
                 .addPath(new BezierLine(launchPose, parkPose))

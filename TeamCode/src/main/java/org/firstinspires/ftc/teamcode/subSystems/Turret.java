@@ -153,11 +153,11 @@ public class Turret implements Subsystem {
                     telemetry.addData("tx ", lastResult.getTargetXDegrees());
                     if (lastResult.getFiducialId() == 24) {
                         telemetry.addData("lastResult: ", lastResult);
-                        if ((lastResult.getTargetXDegrees() < -5 && (turretMotor.getMotor().getCurrentPosition() - lastResult.getTargetXDegrees() * encoderClicksPerDeg) < 1196)) {
+                        if ((lastResult.getTargetXDegrees() < -0.05 && (turretMotor.getMotor().getCurrentPosition() - lastResult.getTargetXDegrees() * encoderClicksPerDeg) < 1196)) {
                             turretControl.setGoal(new KineticState(turretMotor.getMotor().getCurrentPosition() - (lastResult.getTargetXDegrees() * encoderClicksPerDeg) * .8));
                             lastHeading = Math.toDegrees(PedroComponent.follower().getHeading());
                         }
-                        if (lastResult.getTargetXDegrees() > 5 && (turretMotor.getMotor().getCurrentPosition() - lastResult.getTargetXDegrees() * encoderClicksPerDeg) > -1196) {
+                        if (lastResult.getTargetXDegrees() > 0.05 && (turretMotor.getMotor().getCurrentPosition() - lastResult.getTargetXDegrees() * encoderClicksPerDeg) > -1196) {
                             turretControl.setGoal(new KineticState(turretMotor.getMotor().getCurrentPosition() - (lastResult.getTargetXDegrees() * encoderClicksPerDeg) * 0.8));
                             lastHeading = Math.toDegrees(PedroComponent.follower().getHeading());
                         }
@@ -206,11 +206,11 @@ public class Turret implements Subsystem {
                     telemetry.addData("tx ", lastResult.getTargetXDegrees());
                     if (lastResult.getFiducialId() == 20) {
                         telemetry.addData("lastResult: ", lastResult);
-                        if ((lastResult.getTargetXDegrees() < -5 && (turretMotor.getMotor().getCurrentPosition() - lastResult.getTargetXDegrees() * encoderClicksPerDeg) < 1196)) {
+                        if ((lastResult.getTargetXDegrees() < -0.05 && (turretMotor.getMotor().getCurrentPosition() - lastResult.getTargetXDegrees() * encoderClicksPerDeg) < 1196)) {
                             turretControl.setGoal(new KineticState(turretMotor.getMotor().getCurrentPosition() - (lastResult.getTargetXDegrees() * encoderClicksPerDeg) * .8));
                             lastHeading = Math.toDegrees(PedroComponent.follower().getHeading());
                         }
-                        if (lastResult.getTargetXDegrees() > 5 && (turretMotor.getMotor().getCurrentPosition() - lastResult.getTargetXDegrees() * encoderClicksPerDeg) > -1196) {
+                        if (lastResult.getTargetXDegrees() > 0.05 && (turretMotor.getMotor().getCurrentPosition() - lastResult.getTargetXDegrees() * encoderClicksPerDeg) > -1196) {
                             turretControl.setGoal(new KineticState(turretMotor.getMotor().getCurrentPosition() - (lastResult.getTargetXDegrees() * encoderClicksPerDeg) * 0.8));
                             lastHeading = Math.toDegrees(PedroComponent.follower().getHeading());
                         }
