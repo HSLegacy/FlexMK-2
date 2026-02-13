@@ -98,6 +98,11 @@ public class shootFarRed extends NextFTCOpMode {
                 gate.setPosition(.97);
             });
 
+    public Command resetSpindexer = new LambdaCommand()
+            .setStart(() -> {
+                Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(160));
+            });
+
     public Command fire = new LambdaCommand()
             .setStart(() -> {
                 upTakeWheel.setPower(1);
@@ -149,6 +154,7 @@ public class shootFarRed extends NextFTCOpMode {
                 new Delay(1),
                 fire,
                 new Delay(4),
+                resetSpindexer,
                 openGate,
                 runIntake,
                 new FollowPath(sub1Path),
@@ -156,12 +162,14 @@ public class shootFarRed extends NextFTCOpMode {
                 new Delay(.5),
                 new FollowPath(launchPath),
                 new Delay(3),
+                resetSpindexer,
                 openGate,
                 runIntake,
                 new FollowPath(spike31),
                 new FollowPath(spike32, true, .7),
                 new FollowPath(launchPath2),
                 new Delay(6),
+                resetSpindexer,
                 new FollowPath(parkPath)
         );
     }

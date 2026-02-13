@@ -135,6 +135,11 @@ public class closeBlue extends NextFTCOpMode {
                 gate.setPosition(.97);
             });
 
+    public Command resetSpindexer = new LambdaCommand()
+            .setStart(() -> {
+                Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(160));
+            });
+
     public Command fire = new LambdaCommand()
             .setStart(() -> {
                 upTakeWheel.setPower(1);
@@ -181,24 +186,27 @@ public class closeBlue extends NextFTCOpMode {
             return new SequentialGroup(
                 new FollowPath(launchPath),
                 new Delay(2),
+                resetSpindexer,
+                openGate,
                 runIntake,
                 new FollowPath(spike21, false),
                 new FollowPath(spike22, false, 0.8),
                 new FollowPath(launchPath2),
                 new Delay(3.5),
+                resetSpindexer,
                 openGate,
                 runIntake,
                 new FollowPath(spike12, false, 0.8),
                 new FollowPath(launchPath3),
-                fire,
                 new Delay(3.5),
+                resetSpindexer,
                 openGate,
                 runIntake,
                 new FollowPath(spike31, false),
                 new FollowPath(spike32, false, 0.8),
                 new FollowPath(launchPath41),
-                fire,
                 new Delay(3.5),
+                resetSpindexer,
                 new FollowPath(parkPath)
         );
     }
