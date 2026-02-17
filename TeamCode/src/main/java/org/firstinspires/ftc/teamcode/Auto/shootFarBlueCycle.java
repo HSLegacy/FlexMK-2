@@ -7,9 +7,7 @@ import static java.lang.Math.abs;
 
 import dev.nextftc.control.KineticState;
 import dev.nextftc.core.commands.Command;
-import dev.nextftc.core.commands.conditionals.IfElseCommand;
 import dev.nextftc.core.commands.delays.Delay;
-import dev.nextftc.core.commands.groups.ParallelGroup;
 import dev.nextftc.core.commands.groups.SequentialGroup;
 import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.components.SubsystemComponent;
@@ -18,35 +16,26 @@ import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 import dev.nextftc.hardware.impl.CRServoEx;
-import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.impl.ServoEx;
-import dev.nextftc.hardware.positionable.SetPosition;
-import dev.nextftc.hardware.powerable.SetPower;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
-import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
-import java.util.List;
 import java.util.Timer;
-import java.util.TimerTask;
 
-@Autonomous(name = "shootFarBlue")
+@Autonomous(name = "shootFarBlueCycle")
 
-public class shootFarBlue extends NextFTCOpMode {
+public class shootFarBlueCycle extends NextFTCOpMode {
     double flyWheelGoal = 1100;
     boolean lockedOn = false;
     CRServoEx intake = new CRServoEx("intake");
@@ -64,11 +53,12 @@ public class shootFarBlue extends NextFTCOpMode {
     private final Pose launchPose = new Pose(52, 15, Math.toRadians(180));
     private final Pose subStationPickUpPose1 = new Pose(10.5, 20, Math.toRadians(200));
     private final Pose subStationPickUpPose2 = new Pose(9.5, 11, Math.toRadians(210));
+    private final Pose cyclePose = new Pose(12, 11, Math.toRadians(180));
     private final Pose spike3spot1 = new Pose(35, 35, Math.toRadians(180));
     private final Pose spike3spot2 = new Pose(15, 35, Math.toRadians(180));
     private final Pose parkPose = new Pose(50,25, Math.toRadians(180));
 
-    public PathChain launchPath, parkPath, sub1Path, sub2Path, spike31, spike32, launchPath2;
+    public PathChain launchPath, parkPath, sub1Path, sub2Path, spike31, spike32, launchPath2, cyclePath, launchPath3;
 
     public void buildPaths() {
         sub1Path = follower().pathBuilder()
@@ -103,6 +93,16 @@ public class shootFarBlue extends NextFTCOpMode {
                 .addPath(new BezierLine(launchPose, parkPose))
                 .setLinearHeadingInterpolation(launchPose.getHeading(), parkPose.getHeading())
                 .build();
+        cyclePath = follower().pathBuilder()
+                .addPath(new BezierLine(launchPose, cyclePose))
+                .setLinearHeadingInterpolation(launchPose.getHeading(), cyclePose.getHeading())
+                .build();
+        launchPath3 = follower().pathBuilder()
+                .addPath(new BezierLine(cyclePose, launchPose))
+                .setLinearHeadingInterpolation(cyclePose.getHeading(), launchPose.getHeading())
+                .addParametricCallback(.2, closeGate)
+                .addParametricCallback(.9, fire)
+                .build();
     }
     public Command runIntake = new LambdaCommand()
             .setStart(() -> {
@@ -133,7 +133,7 @@ public class shootFarBlue extends NextFTCOpMode {
                 intake2.setPower(1);
             });
 
-    public shootFarBlue() {
+    public shootFarBlueCycle() {
         addComponents(
                 new SubsystemComponent(Spindexer.INSTANCE),
                 new SubsystemComponent(Turret.INSTANCE),
@@ -178,10 +178,15 @@ public class shootFarBlue extends NextFTCOpMode {
                 resetSpindexer,
                 openGate,
                 runIntake,
-                new FollowPath(spike31),
-                new FollowPath(spike32, true, .7),
-                new FollowPath(launchPath2),
-                new Delay(6),
+                new FollowPath(cyclePath),
+                new FollowPath(launchPath3),
+                new Delay(2.5),
+                resetSpindexer,
+                openGate,
+                runIntake,
+                new FollowPath(cyclePath),
+                new FollowPath(launchPath3),
+                new Delay(2.5),
                 resetSpindexer,
                 new FollowPath(parkPath)
         );
