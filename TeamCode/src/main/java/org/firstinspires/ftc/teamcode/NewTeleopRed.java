@@ -7,7 +7,6 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -75,10 +74,11 @@ public class NewTeleopRed extends NextFTCOpMode {
     @Override
     public void onStartButtonPressed() {
         Spindexer.INSTANCE.intakePosition.schedule();
+        FlyWheel.INSTANCE.isStarted = true;
         Spindexer.INSTANCE.isStarted = true;
+        turret.turretPower = true;
         driverControlled.schedule();
         Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(160));
-        Turret.INSTANCE.turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         fire.whenBecomesTrue(() -> fireFuction());
         rightTurret.whenBecomesTrue(() -> rightTurret());
         leftTurret.whenBecomesTrue(() -> leftTurret());

@@ -26,6 +26,7 @@ import java.util.Map;
 public class Turret implements Subsystem {
     public static final Turret INSTANCE = new Turret();
     public boolean lockedOn = false;
+    public boolean turretPower = false;
     public boolean zeroToggle = true;
     private static DigitalChannel turretLimitSwitch = null;
     public double encoderClicksPerDeg = 5081 / 360.0; //limits: -1197, 1197
@@ -261,6 +262,8 @@ public class Turret implements Subsystem {
         }
         @Override
         public void periodic () {
-            turretMotor.setPower(turretControl.calculate(turretMotor.getState()));
+            if (turretPower) {
+                turretMotor.setPower(turretControl.calculate(turretMotor.getState()));
+            }
         }
     }

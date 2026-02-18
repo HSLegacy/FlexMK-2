@@ -8,7 +8,6 @@ import static java.lang.Math.abs;
 
 import dev.nextftc.control.KineticState;
 import dev.nextftc.core.commands.Command;
-import dev.nextftc.core.commands.delays.Delay;
 import dev.nextftc.core.commands.groups.SequentialGroup;
 import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.components.SubsystemComponent;
@@ -20,7 +19,6 @@ import dev.nextftc.hardware.impl.CRServoEx;
 import dev.nextftc.hardware.impl.ServoEx;
 
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
@@ -132,6 +130,8 @@ public class closeBlueOS extends NextFTCOpMode {
         turret.turretControl.setGoal(new KineticState(-500));
         Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         Spindexer.INSTANCE.isStarted = true;
+        FlyWheel.INSTANCE.isStarted = true;
+        turret.turretPower = true;
     }
 
 

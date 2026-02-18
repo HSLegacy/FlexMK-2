@@ -5,7 +5,6 @@ package org.firstinspires.ftc.teamcode.subSystems;
 
 import static java.lang.Math.abs;
 
-import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.graph.GraphManager;
 import com.bylazar.graph.PanelsGraph;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -31,6 +30,7 @@ public class FlyWheel implements Subsystem {
     public MotorEx rightFlyWheel = new MotorEx("rightFW");
 
     public double goal = 1100;
+    public boolean isStarted = false;
     public ControlSystem FlyWheelControl = ControlSystem.builder()
             .velPid(.011,0, 0.8) //.011, 0, .8
             .elevatorFF(0.03)
@@ -46,7 +46,6 @@ public class FlyWheel implements Subsystem {
     }
     public final Command onAuto = new RunToVelocity(FlyWheelControl, 1550).requires(this).named("FlywheelOn");
 
-    private boolean isStarted = false;
 
     @Override
     public void initialize() {
@@ -67,9 +66,9 @@ public class FlyWheel implements Subsystem {
     */
         telemetryManager.getTelemetry().update();
         manager.update();
-
-        leftFlyWheel.setPower(FlyWheelControl.calculate(leftFlyWheel.getState()));
-        rightFlyWheel.setPower(FlyWheelControl.calculate(new KineticState(rightFlyWheel.getCurrentPosition(), abs(rightFlyWheel.getVelocity()))));
-
+        if(isStarted) {
+            leftFlyWheel.setPower(FlyWheelControl.calculate(leftFlyWheel.getState()));
+            rightFlyWheel.setPower(FlyWheelControl.calculate(new KineticState(rightFlyWheel.getCurrentPosition(), abs(rightFlyWheel.getVelocity()))));
+        }
     }
 }

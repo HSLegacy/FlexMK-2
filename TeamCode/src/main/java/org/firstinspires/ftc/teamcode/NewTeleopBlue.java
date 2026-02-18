@@ -7,7 +7,6 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -37,6 +36,7 @@ public class NewTeleopBlue extends NextFTCOpMode {
     CRServoEx intake2 = new CRServoEx("intake2");
     CRServoEx upTakeWheel = new CRServoEx("upTakeWheel");
     ServoEx gate = new ServoEx("gate");
+    ServoEx hood = new ServoEx("hood");
     Turret turret = Turret.INSTANCE;
 
     LLResultTypes.FiducialResult lastResult = null;
@@ -75,10 +75,11 @@ public class NewTeleopBlue extends NextFTCOpMode {
     @Override
     public void onStartButtonPressed() {
         Spindexer.INSTANCE.intakePosition.schedule();
+        FlyWheel.INSTANCE.isStarted = true;
         Spindexer.INSTANCE.isStarted = true;
+        turret.turretPower = true;
         driverControlled.schedule();
         Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(160));
-        Turret.INSTANCE.turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         fire.whenBecomesTrue(() -> fireFuction());
         rightTurret.whenBecomesTrue(() -> rightTurret());
         leftTurret.whenBecomesTrue(() -> leftTurret());
@@ -90,7 +91,8 @@ public class NewTeleopBlue extends NextFTCOpMode {
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> runFlyWheel())
                 .whenBecomesFalse(() -> stopFlyWheel());
-//blah
+        button(() -> gamepad1.dpad_up)
+                .whenBecomesTrue(() -> hood.setPosition(.12));
         button(() -> gamepad1.left_bumper)
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> intake.setPower(1))
@@ -136,7 +138,7 @@ public class NewTeleopBlue extends NextFTCOpMode {
         }
         */
 
-        FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
+        FlyWheel.INSTANCE.setGoal(turret.flyWheelGoal);
 
         turret.lockOnUpdate(limelight, telemetry);
         turret.lockOnTurretBlue(limelight, telemetry);
@@ -163,12 +165,12 @@ public class NewTeleopBlue extends NextFTCOpMode {
     }
 
     Runnable runFlyWheel() {
-        Turret.INSTANCE.flyWheelGoal = 1150;
+        turret.flyWheelGoal = 1150;
         return null;
     }
 
     Runnable stopFlyWheel() {
-        Turret.INSTANCE.flyWheelGoal = 0;
+        turret.flyWheelGoal = 0;
         return null;
     }
 

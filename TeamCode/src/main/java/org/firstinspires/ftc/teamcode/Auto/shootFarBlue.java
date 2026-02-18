@@ -7,9 +7,7 @@ import static java.lang.Math.abs;
 
 import dev.nextftc.control.KineticState;
 import dev.nextftc.core.commands.Command;
-import dev.nextftc.core.commands.conditionals.IfElseCommand;
 import dev.nextftc.core.commands.delays.Delay;
-import dev.nextftc.core.commands.groups.ParallelGroup;
 import dev.nextftc.core.commands.groups.SequentialGroup;
 import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.components.SubsystemComponent;
@@ -18,31 +16,22 @@ import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 import dev.nextftc.hardware.impl.CRServoEx;
-import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.impl.ServoEx;
-import dev.nextftc.hardware.positionable.SetPosition;
-import dev.nextftc.hardware.powerable.SetPower;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
-import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
-import java.util.List;
 import java.util.Timer;
-import java.util.TimerTask;
 
 @Autonomous(name = "shootFarBlue")
 
@@ -196,6 +185,8 @@ public class shootFarBlue extends NextFTCOpMode {
         turret.turretControl.setGoal(new KineticState(-1000));
         Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         Spindexer.INSTANCE.isStarted = true;
+        FlyWheel.INSTANCE.isStarted = true;
+        turret.turretPower = true;
     }
 
     @Override

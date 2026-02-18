@@ -52,13 +52,15 @@ public class shootFarBlueCycle extends NextFTCOpMode {
     private final Pose startPose = new Pose(52, 9, Math.toRadians(180));
     private final Pose launchPose = new Pose(52, 15, Math.toRadians(180));
     private final Pose subStationPickUpPose1 = new Pose(10.5, 20, Math.toRadians(200));
-    private final Pose subStationPickUpPose2 = new Pose(9.5, 11, Math.toRadians(210));
-    private final Pose cyclePose = new Pose(12, 11, Math.toRadians(180));
+    private final Pose subStationPickUpPose2 = new Pose(10, 11, Math.toRadians(210));
+    private final Pose cyclePose = new Pose(11.5, 10, Math.toRadians(180));
+    private final Pose cyclePose2 = new Pose(14.5, 10, Math.toRadians(180));
+    private final Pose cyclePose3 = new Pose(11.5, 10, Math.toRadians(180));
     private final Pose spike3spot1 = new Pose(35, 35, Math.toRadians(180));
     private final Pose spike3spot2 = new Pose(15, 35, Math.toRadians(180));
     private final Pose parkPose = new Pose(50,25, Math.toRadians(180));
 
-    public PathChain launchPath, parkPath, sub1Path, sub2Path, spike31, spike32, launchPath2, cyclePath, launchPath3;
+    public PathChain launchPath, parkPath, sub1Path, sub2Path, spike31, spike32, launchPath2, cyclePath, launchPath3, cyclePath2, cyclePath3;
 
     public void buildPaths() {
         sub1Path = follower().pathBuilder()
@@ -97,9 +99,17 @@ public class shootFarBlueCycle extends NextFTCOpMode {
                 .addPath(new BezierLine(launchPose, cyclePose))
                 .setLinearHeadingInterpolation(launchPose.getHeading(), cyclePose.getHeading())
                 .build();
+        cyclePath2 = follower().pathBuilder()
+                .addPath(new BezierLine(cyclePose, cyclePose2))
+                .setLinearHeadingInterpolation(cyclePose.getHeading(), cyclePose2.getHeading())
+                .build();
+        cyclePath3 = follower().pathBuilder()
+                .addPath(new BezierLine(cyclePose2, cyclePose3))
+                .setLinearHeadingInterpolation(cyclePose2.getHeading(), cyclePose3.getHeading())
+                .build();
         launchPath3 = follower().pathBuilder()
-                .addPath(new BezierLine(cyclePose, launchPose))
-                .setLinearHeadingInterpolation(cyclePose.getHeading(), launchPose.getHeading())
+                .addPath(new BezierLine(cyclePose3, launchPose))
+                .setLinearHeadingInterpolation(cyclePose3.getHeading(), launchPose.getHeading())
                 .addParametricCallback(.2, closeGate)
                 .addParametricCallback(.9, fire)
                 .build();
@@ -179,12 +189,16 @@ public class shootFarBlueCycle extends NextFTCOpMode {
                 openGate,
                 runIntake,
                 new FollowPath(cyclePath),
+                new FollowPath(cyclePath2),
+                new FollowPath(cyclePath3),
                 new FollowPath(launchPath3),
                 new Delay(2.5),
                 resetSpindexer,
                 openGate,
                 runIntake,
                 new FollowPath(cyclePath),
+                new FollowPath(cyclePath2),
+                new FollowPath(cyclePath3),
                 new FollowPath(launchPath3),
                 new Delay(2.5),
                 resetSpindexer,
@@ -201,6 +215,8 @@ public class shootFarBlueCycle extends NextFTCOpMode {
         turret.turretControl.setGoal(new KineticState(-1000));
         Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         Spindexer.INSTANCE.isStarted = true;
+        FlyWheel.INSTANCE.isStarted = true;
+        turret.turretPower = true;
     }
 
     @Override

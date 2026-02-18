@@ -220,6 +220,8 @@ public class closeBlue extends NextFTCOpMode {
         turret.turretControl.setGoal(new KineticState(-500));
         Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         Spindexer.INSTANCE.isStarted = true;
+        FlyWheel.INSTANCE.isStarted = true;
+        turret.turretPower = true;
     }
 
 
