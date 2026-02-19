@@ -74,13 +74,13 @@ public class Turret implements Subsystem {
                     telemetry.addData("Camera Pose Target Space: ", lastResult.getCameraPoseTargetSpace());
 
                     if (lastResult.getCameraPoseTargetSpace().getPosition().z < -1.3 && lastResult.getCameraPoseTargetSpace().getPosition().z > -2.7) {
-                        hood.setPosition(.12);
+                        hood.setPosition(.10);
                         flyWheelGoal = -148.54471 * lastResult.getCameraPoseTargetSpace().getPosition().z + 949.51591;
                     } else if (lastResult.getCameraPoseTargetSpace().getPosition().z > -1.3 && lastResult.getCameraPoseTargetSpace().getPosition().z < -0.8) {
                         hood.setPosition(.065);
                         flyWheelGoal = -247.70642 * lastResult.getCameraPoseTargetSpace().getPosition().z + 831.65138;
                     } else if (lastResult.getCameraPoseTargetSpace().getPosition().z < -3) {
-                        hood.setPosition(.13);
+                        hood.setPosition(.11);
                         flyWheelGoal = -123.48178 * lastResult.getCameraPoseTargetSpace().getPosition().z + 1118.7247;
                     }
 
