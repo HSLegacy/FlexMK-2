@@ -37,9 +37,8 @@ public class NewTeleopBlue extends NextFTCOpMode {
     CRServoEx upTakeWheel = new CRServoEx("upTakeWheel");
     ServoEx gate = new ServoEx("gate");
     ServoEx hood = new ServoEx("hood");
-    Turret turret = Turret.INSTANCE;
+    Turret turret = Turret.getInstance(limelight);
 
-    LLResultTypes.FiducialResult lastResult = null;
     private DigitalChannel limitSwitch = null;
 
     boolean running = true;
@@ -64,7 +63,7 @@ public class NewTeleopBlue extends NextFTCOpMode {
         addComponents(
                 new PedroComponent(Constants::createFollower),
                 new SubsystemComponent(FlyWheel.INSTANCE),
-                new SubsystemComponent(Turret.INSTANCE),
+                new SubsystemComponent(turret),
                 new SubsystemComponent(Spindexer.INSTANCE),
                 BulkReadComponent.INSTANCE,
                 BindingsComponent.INSTANCE
@@ -124,24 +123,14 @@ public class NewTeleopBlue extends NextFTCOpMode {
         telemetry.addData("spindexer Pos", Spindexer.INSTANCE.spindexer.getState().toString());
         telemetry.addData("spindexer Goal", Spindexer.INSTANCE.spindexerControl.getGoal().getPosition());
         telemetry.addData("spindexer encoder", Spindexer.INSTANCE.spindexer.getRawTicks());
-        telemetry.addData("Flywheel Goal", Turret.INSTANCE.flyWheelGoal);
+        telemetry.addData("Flywheel Goal", turret.flyWheelGoal);
         telemetry.update();
 
         if(Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() < -1100 && Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() > -1120){
             Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(160));
         }
 
-        /*
-        if (!limitSwitch.getState() && Spindexer.INSTANCE.spindexerControl.getGoal().getPosition() == 0){
-            Spindexer.INSTANCE.spindexer.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(160));
-        }
-        */
-
-        FlyWheel.INSTANCE.setGoal(turret.flyWheelGoal);
-
-        turret.lockOnUpdate(limelight, telemetry);
-        turret.lockOnTurretBlue(limelight, telemetry);
+        turret.lockOnUpdate(telemetry);
 
     }
 
@@ -149,12 +138,13 @@ public class NewTeleopBlue extends NextFTCOpMode {
 
     @Override
     public void onInit() {
-        turret.turretControl.setGoal(new KineticState(0));
         Spindexer.INSTANCE.intakePosition.schedule();
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
+
+        turret.turretControl.setGoal(new KineticState(0));
 
         limitSwitch = hardwareMap.get(DigitalChannel.class, "limitSwitch");
     }
@@ -184,27 +174,27 @@ public class NewTeleopBlue extends NextFTCOpMode {
     }
 
     Runnable rightTurret() {
-        Turret.INSTANCE.turretControl.setGoal(new KineticState(Turret.INSTANCE.turretControl.getGoal().getPosition() - 200));
+        turret.turretControl.setGoal(new KineticState(turret.turretControl.getGoal().getPosition() - 200));
         return null;
     }
 
     Runnable leftTurret() {
-        Turret.INSTANCE.turretControl.setGoal(new KineticState(Turret.INSTANCE.turretControl.getGoal().getPosition() + 200));
+        turret.turretControl.setGoal(new KineticState(turret.turretControl.getGoal().getPosition() + 200));
         return null;
     }
 
     Runnable lockOn() {
-        if ((((Turret.INSTANCE.lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * Turret.INSTANCE.encoderClicksPerDeg) + Turret.INSTANCE.turretControl.getGoal().getPosition()) < 1196 && (((Turret.INSTANCE.lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * Turret.INSTANCE.encoderClicksPerDeg) + Turret.INSTANCE.turretControl.getGoal().getPosition()) > -1196) {
-            Turret.INSTANCE.turretControl.setGoal(new KineticState(((Turret.INSTANCE.lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * Turret.INSTANCE.encoderClicksPerDeg) + Turret.INSTANCE.turretControl.getGoal().getPosition()));
+        if ((((turret.lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * turret.encoderClicksPerDeg) + turret.turretControl.getGoal().getPosition()) < 1196 && (((turret.lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * turret.encoderClicksPerDeg) + turret.turretControl.getGoal().getPosition()) > -1196) {
+            turret.turretControl.setGoal(new KineticState(((turret.lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * turret.encoderClicksPerDeg) + turret.turretControl.getGoal().getPosition()));
         }
         return null;
     }
     Runnable turretCorrectOn() {
-        Turret.INSTANCE.lockToggle = false;
+        turret.lockToggle = false;
         return null;
     }
     Runnable turretCorrectOff() {
-        Turret.INSTANCE.lockToggle = true;
+        turret.lockToggle = true;
         return null;
     }
 }

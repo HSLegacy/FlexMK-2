@@ -1,5 +1,11 @@
 package org.firstinspires.ftc.teamcode.subSystems;
 
+import com.pedropathing.ftc.FTCCoordinates;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.ftc.PoseConverter;
+import com.pedropathing.geometry.CoordinateSystem;
+import com.pedropathing.geometry.PedroCoordinates;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -19,19 +25,33 @@ import dev.nextftc.hardware.impl.ServoEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 import java.util.List;
 import java.util.Map;
 
 public class Turret implements Subsystem {
-    public static final Turret INSTANCE = new Turret();
     public boolean lockedOn = false;
     public boolean turretPower = false;
     public boolean zeroToggle = true;
     private static DigitalChannel turretLimitSwitch = null;
     public double encoderClicksPerDeg = 5081 / 360.0; //limits: -1197, 1197
 
-    private Turret() {
+    private static Turret single_instance = null;
+
+    private static Limelight3A limelight;
+    private Turret() {}
+
+    public static synchronized Turret getInstance(Limelight3A l)
+    {
+        if (single_instance == null)
+            single_instance = new Turret();
+
+        limelight = l;
+
+        return single_instance;
     }
 
     public MotorEx turretMotor = new MotorEx("turretMotor");
@@ -57,10 +77,11 @@ public class Turret implements Subsystem {
     public final Command goal0Turret = new RunToPosition(turretControl, 0).requires(this).named("goal0Turret");
     public final Command goal150Turret = new RunToPosition(turretControl, -800).requires(this).named("goal150Turret");
 
-    public void lockOnUpdate(Limelight3A limelight, Telemetry telemetry) {
+    public void lockOnUpdate(Telemetry telemetry) {
 
         LLResult result = limelight.getLatestResult();
 
+        telemetry.addData("Pedro Localizer", PedroComponent.follower().getPose());
 
         if (result != null) {
 
@@ -69,9 +90,12 @@ public class Turret implements Subsystem {
                 //telemetry.addData("Tx:", feducialResults.get(0).getTargetXDegrees());
                 lastResult = feducialResults.get(0);
 
-                if (lastResult != null) {
+                Pose2D limelightPose = new Pose2D(DistanceUnit.INCH,lastResult.getRobotPoseFieldSpace().getPosition().x, lastResult.getRobotPoseFieldSpace().getPosition().y, AngleUnit.DEGREES, lastResult.getRobotPoseFieldSpace().getOrientation().getYaw(AngleUnit.DEGREES));
 
-                    telemetry.addData("Camera Pose Target Space: ", lastResult.getCameraPoseTargetSpace());
+                if (lastResult != null) {
+                    PedroComponent.follower().setPose(getRobotPoseFromCamera(limelightPose, DistanceUnit.INCH));
+
+                    telemetry.addData("Robot Pose Field Space: ", result.getBotpose());
 
                     if (lastResult.getCameraPoseTargetSpace().getPosition().z < -1.3 && lastResult.getCameraPoseTargetSpace().getPosition().z > -2.7) {
                         hood.setPosition(.12);
@@ -101,7 +125,7 @@ public class Turret implements Subsystem {
 
     }
 
-    public void lockOn(Limelight3A limelight, Telemetry telemetry) {
+    public void lockOn(Telemetry telemetry) {
 
         LLResult result = limelight.getLatestResult();
 
@@ -135,7 +159,7 @@ public class Turret implements Subsystem {
     }
 
 
-    public void lockOnTurretRed(Limelight3A limelight, Telemetry telemetry) {
+    public void lockOnTurretRed(Telemetry telemetry) {
         LLResult result = limelight.getLatestResult();
         isBounded = (turretControl.getGoal().getPosition() < 1196 && turretControl.getGoal().getPosition() > -1196);
         willBound = ((((lastTurretPose) - (lastHeading - Math.toDegrees(PedroComponent.follower().getHeading()))) * encoderClicksPerDeg) < 1196) && ((((lastTurretPose) - (lastHeading - Math.toDegrees(PedroComponent.follower().getHeading()))) * encoderClicksPerDeg) > -1196);
@@ -188,7 +212,7 @@ public class Turret implements Subsystem {
         }
     }
 
-    public void lockOnTurretBlue(Limelight3A limelight, Telemetry telemetry) {
+    public void lockOnTurretBlue(Telemetry telemetry) {
         LLResult result = limelight.getLatestResult();
         isBounded = (turretControl.getGoal().getPosition() < 1196 && turretControl.getGoal().getPosition() > -1196);
         willBound = ((((lastTurretPose) - (lastHeading - Math.toDegrees(PedroComponent.follower().getHeading()))) * encoderClicksPerDeg) < 1196) && ((((lastTurretPose) - (lastHeading - Math.toDegrees(PedroComponent.follower().getHeading()))) * encoderClicksPerDeg) > -1196);
@@ -199,6 +223,8 @@ public class Turret implements Subsystem {
         telemetry.addData("lockToggle: ", lockToggle);
 
         telemetry.addData("heading diff: ", (lastHeading - Math.toDegrees(PedroComponent.follower().getHeading())) * encoderClicksPerDeg);
+
+
         if (isBounded) {
             if (result != null) {
                 if (result.isValid()) {
@@ -240,7 +266,7 @@ public class Turret implements Subsystem {
             }
         }
     }
-        public int getIndex (Limelight3A limelight){
+        public int getIndex (){
             LLResult result = limelight.getLatestResult();
             Map<String, Double> Data = null;
 
@@ -256,10 +282,14 @@ public class Turret implements Subsystem {
             return 0;
         }
 
+    private Pose getRobotPoseFromCamera(Pose2D pose, DistanceUnit d) {
+        return new Pose(pose.getX(d), pose.getY(d), pose.getHeading(AngleUnit.DEGREES), FTCCoordinates.INSTANCE).getAsCoordinateSystem(PedroCoordinates.INSTANCE);
+    }
+
         @Override
         public void initialize () {
-            turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
+
         @Override
         public void periodic () {
             if (turretPower) {

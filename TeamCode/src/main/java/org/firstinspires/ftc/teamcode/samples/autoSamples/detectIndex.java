@@ -38,12 +38,12 @@ import java.util.Timer;
 
 public class detectIndex extends NextFTCOpMode {
    public static Limelight3A limelight = null;
-
+   Turret turret = Turret.getInstance(limelight);
 
 
     public detectIndex() {
         addComponents(
-                new SubsystemComponent(Turret.INSTANCE),
+                new SubsystemComponent(turret),
                 BulkReadComponent.INSTANCE
         );
     }
@@ -65,8 +65,8 @@ public class detectIndex extends NextFTCOpMode {
     @Override
     public void onUpdate() {
 
-        if(Turret.INSTANCE.getIndex(limelight) != 0){
-            lastIndex = Turret.INSTANCE.getIndex(limelight);
+        if(turret.getIndex() != 0){
+            lastIndex = turret.getIndex();
         }
         telemetry.addData("index", lastIndex);
         telemetry.update();
