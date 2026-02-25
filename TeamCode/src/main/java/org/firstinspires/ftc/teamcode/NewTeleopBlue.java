@@ -130,8 +130,6 @@ public class NewTeleopBlue extends NextFTCOpMode {
             Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(160));
         }
 
-        turret.lockOnUpdate(telemetry);
-
     }
 
     public static Limelight3A limelight = null;

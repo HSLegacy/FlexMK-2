@@ -90,10 +90,10 @@ public class Turret implements Subsystem {
                 //telemetry.addData("Tx:", feducialResults.get(0).getTargetXDegrees());
                 lastResult = feducialResults.get(0);
 
-                Pose2D limelightPose = new Pose2D(DistanceUnit.INCH,lastResult.getRobotPoseFieldSpace().getPosition().x, lastResult.getRobotPoseFieldSpace().getPosition().y, AngleUnit.DEGREES, lastResult.getRobotPoseFieldSpace().getOrientation().getYaw(AngleUnit.DEGREES));
+                Pose2D limelightPose = new Pose2D(DistanceUnit.METER,lastResult.getRobotPoseFieldSpace().getPosition().x, lastResult.getRobotPoseFieldSpace().getPosition().y, AngleUnit.DEGREES, lastResult.getRobotPoseFieldSpace().getOrientation().getYaw(AngleUnit.DEGREES));
 
                 if (lastResult != null) {
-                    PedroComponent.follower().setPose(getRobotPoseFromCamera(limelightPose, DistanceUnit.INCH));
+                    PedroComponent.follower().setPose(getRobotPoseFromCamera(limelightPose, DistanceUnit.METER));
 
                     telemetry.addData("Robot Pose Field Space: ", result.getBotpose());
 
@@ -153,9 +153,6 @@ public class Turret implements Subsystem {
                 }
             }
         }
-
-        //telemetry.update();
-
     }
 
 
@@ -189,7 +186,6 @@ public class Turret implements Subsystem {
                         if (lastResult.getTargetXDegrees() < 13 && lastResult.getTargetXDegrees() > -13) {
                             lastHeading = Math.toDegrees(PedroComponent.follower().getHeading());
                         }
-//blah
 
                     }
                     if (lastResult.getFiducialId() != 24){
@@ -244,7 +240,6 @@ public class Turret implements Subsystem {
                         if (lastResult.getTargetXDegrees() < 13 && lastResult.getTargetXDegrees() > -13) {
                             lastHeading = Math.toDegrees(PedroComponent.follower().getHeading());
                         }
-//blah
 
                     }
                     if (lastResult.getFiducialId() != 20){
