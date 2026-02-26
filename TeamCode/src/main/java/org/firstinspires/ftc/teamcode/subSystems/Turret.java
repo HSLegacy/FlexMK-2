@@ -77,6 +77,10 @@ public class Turret implements Subsystem {
     public final Command goal0Turret = new RunToPosition(turretControl, 0).requires(this).named("goal0Turret");
     public final Command goal150Turret = new RunToPosition(turretControl, -800).requires(this).named("goal150Turret");
 
+    private Pose getRobotPoseFromCamera(Pose2D pose, DistanceUnit d) {
+        return new Pose(pose.getX(d), pose.getY(d), pose.getHeading(AngleUnit.DEGREES), FTCCoordinates.INSTANCE).getAsCoordinateSystem(PedroCoordinates.INSTANCE);
+    }
+
     public void lockOnUpdate(Telemetry telemetry) {
 
         LLResult result = limelight.getLatestResult();
@@ -87,15 +91,25 @@ public class Turret implements Subsystem {
 
             if (result.isValid()) {
                 List<LLResultTypes.FiducialResult> feducialResults = result.getFiducialResults();
-                //telemetry.addData("Tx:", feducialResults.get(0).getTargetXDegrees());
+                //telemetry.addData("Tx:", fe5667ducialResults.get(0).getTargetXDegrees());
                 lastResult = feducialResults.get(0);
+
+                Pose2D botPose2D = new Pose2D(DistanceUnit.INCH,result.getBotpose().getPosition().x * 39.37008d , result.getBotpose().getPosition().y * 39.37008d, AngleUnit.RADIANS, result.getBotpose().getOrientation().getYaw());
+
+                Pose ftcStandard = PoseConverter.pose2DToPose(botPose2D, InvertedFTCCoordinates.INSTANCE);
+
+                Pose pedroStandard = ftcStandard.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
 
                 Pose2D limelightPose = new Pose2D(DistanceUnit.METER,lastResult.getRobotPoseFieldSpace().getPosition().x, lastResult.getRobotPoseFieldSpace().getPosition().y, AngleUnit.DEGREES, lastResult.getRobotPoseFieldSpace().getOrientation().getYaw(AngleUnit.DEGREES));
 
                 if (lastResult != null) {
-                    PedroComponent.follower().setPose(getRobotPoseFromCamera(limelightPose, DistanceUnit.METER));
 
-                    telemetry.addData("Robot Pose Field Space: ", result.getBotpose());
+                    telemetry.addData("Robot Pose Field Space as pedro coodinates: ", pedroStandard);
+
+                    telemetry.addData("Robot Pose Field Space from limelight: ", result.getBotpose());
+
+                    telemetry.addData("BotPose2D: ", botPose2D);
+                   /*
 
                     if (lastResult.getCameraPoseTargetSpace().getPosition().z < -1.3 && lastResult.getCameraPoseTargetSpace().getPosition().z > -2.7) {
                         hood.setPosition(.12);
@@ -107,6 +121,7 @@ public class Turret implements Subsystem {
                         hood.setPosition(.13);
                         flyWheelGoal = -123.48178 * lastResult.getCameraPoseTargetSpace().getPosition().z + 1118.7247;
                     }
+                    */
 
                     telemetry.addData("Function y: ", flyWheelGoal);
 
@@ -277,9 +292,7 @@ public class Turret implements Subsystem {
             return 0;
         }
 
-    private Pose getRobotPoseFromCamera(Pose2D pose, DistanceUnit d) {
-        return new Pose(pose.getX(d), pose.getY(d), pose.getHeading(AngleUnit.DEGREES), FTCCoordinates.INSTANCE).getAsCoordinateSystem(PedroCoordinates.INSTANCE);
-    }
+
 
         @Override
         public void initialize () {
@@ -287,8 +300,10 @@ public class Turret implements Subsystem {
 
         @Override
         public void periodic () {
-            if (turretPower) {
+            /*if (turretPower) {
                 turretMotor.setPower(turretControl.calculate(turretMotor.getState()));
             }
+
+             */
         }
     }
