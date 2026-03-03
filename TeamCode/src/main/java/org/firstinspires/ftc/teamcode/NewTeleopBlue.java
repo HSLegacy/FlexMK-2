@@ -146,7 +146,7 @@ public class NewTeleopBlue extends NextFTCOpMode {
         turret.turretControl.setGoal(new KineticState(0));
 
         limitSwitch = hardwareMap.get(DigitalChannel.class, "limitSwitch");
-        PedroComponent.follower().setPose(new Pose(72,72, Math.toRadians(180)));
+        PedroComponent.follower().setPose(new Pose(0,0, Math.toRadians(180)));
     }
 
     @Override

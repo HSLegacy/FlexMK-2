@@ -98,7 +98,7 @@ public class Turret implements Subsystem {
 
                 Pose ftcStandard = PoseConverter.pose2DToPose(botPose2D, InvertedFTCCoordinates.INSTANCE);
 
-                Pose pedroStandard = ftcStandard.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
+                Pose pedroStandard = getRobotPoseFromCamera(botPose2D, DistanceUnit.INCH); //ftcStandard.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
 
                 Pose2D limelightPose = new Pose2D(DistanceUnit.METER,lastResult.getRobotPoseFieldSpace().getPosition().x, lastResult.getRobotPoseFieldSpace().getPosition().y, AngleUnit.DEGREES, lastResult.getRobotPoseFieldSpace().getOrientation().getYaw(AngleUnit.DEGREES));
 
