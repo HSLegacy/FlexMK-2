@@ -1,46 +1,40 @@
 package org.firstinspires.ftc.teamcode;
 
 
-import static dev.nextftc.bindings.Bindings.button;
-import static dev.nextftc.extensions.pedro.PedroComponent.follower;
-
 import com.pedropathing.ftc.FTCCoordinates;
 import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
-import org.firstinspires.ftc.teamcode.subSystems.Spindexer;
-import org.firstinspires.ftc.teamcode.subSystems.Turret;
 
 import dev.nextftc.bindings.BindingManager;
-import dev.nextftc.bindings.Button;
-import dev.nextftc.control.KineticState;
+import dev.nextftc.control.ControlSystem;
 import dev.nextftc.core.components.BindingsComponent;
-import dev.nextftc.core.components.SubsystemComponent;
-import dev.nextftc.core.units.Distance;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.extensions.pedro.PedroDriverControlled;
 import dev.nextftc.ftc.Gamepads;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 import dev.nextftc.hardware.driving.DriverControlledCommand;
-import dev.nextftc.hardware.impl.CRServoEx;
-import dev.nextftc.hardware.impl.ServoEx;
+import dev.nextftc.hardware.impl.MotorEx;
 
 @TeleOp(name = "Test OpMode")
 
 public class TestTeleop extends NextFTCOpMode {
 
+    public ControlSystem turretControl = ControlSystem.builder()
+            .posPid(0.008, 0.0, 0.0001)
+            .elevatorFF(0)
+            .build();
 
+    public MotorEx turretMotor = new MotorEx("turretMotor");
     DriverControlledCommand driverControlled = new PedroDriverControlled(
             Gamepads.gamepad1().leftStickY().negate(),
             Gamepads.gamepad1().leftStickX().negate(),
@@ -66,12 +60,13 @@ public class TestTeleop extends NextFTCOpMode {
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
 
-        PedroComponent.follower().setStartingPose(new Pose(72,72, Math.toRadians(180)));
+        PedroComponent.follower().setStartingPose(new Pose(72,72, Math.toRadians(90)));
 
     }
 
     @Override
     public void onStartButtonPressed() {
+        turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         driverControlled.schedule();
     }
 
@@ -84,26 +79,52 @@ public class TestTeleop extends NextFTCOpMode {
 
     public Pose2D botpose2D;
     public Pose botposeAsPedro;
+
+    public Pose targetPoseBlue = new Pose(7, 137);
+
+    public double degreesToTurnFromZero;
+
+    public double turretHeadingOffset;
+
+    public double encoderClicksPerDeg = 360d / 5081d; //limits: -1197, 1197
+    public double degreesToTurnFromTurret;
+    public double turretPolarCoordinates;
+
     @Override
     public void onUpdate() {
 
 
-        PedroComponent.follower().update();
 
         LLResult result = limelight.getLatestResult();
 
         telemetry.addData("PedroLocalizer", PedroComponent.follower().getPose());
+
+        turretPolarCoordinates = turretMotor.getCurrentPosition() * encoderClicksPerDeg + Math.toDegrees(PedroComponent.follower().getPose().getHeading());
+
+        telemetry.addData("turret polar coordinates: ", turretPolarCoordinates);
+        telemetry.addData("Turret Encoder: ", turretMotor.getCurrentPosition());
+
         if(result != null){
             if(result.isValid()){
                 botpose2D = new Pose2D(DistanceUnit.INCH, result.getBotpose().getPosition().x * 39.37008 , result.getBotpose().getPosition().y * 39.37008, AngleUnit.RADIANS, result.getBotpose().getOrientation().getYaw());
                 botposeAsPedro = getFTCPoseAsPedro(botpose2D);
-                telemetry.addData("Limelight Coordinates As Pedro: ", getFTCPoseAsPedro(botpose2D));
-                telemetry.addData("Limelight Coordinates: ", botpose2D);
 
-                PedroComponent.follower().setPose(new Pose(botposeAsPedro.getX(), botposeAsPedro.getY(), PedroComponent.follower().getHeading()));
+
+                degreesToTurnFromZero = Math.toDegrees(Math.atan2(targetPoseBlue.getX() - botposeAsPedro.getX(), targetPoseBlue.getY() - botposeAsPedro.getY())) - Math.toDegrees(PedroComponent.follower().getHeading());
+
+
+
+                telemetry.addData("Limelight Coordinates As Pedro: ", getFTCPoseAsPedro(botpose2D));
+                telemetry.addData("Degrees To Turn from Zero", degreesToTurnFromZero);
+
+                PedroComponent.follower().setPose(new Pose(botposeAsPedro.getX(), botposeAsPedro.getY(), PedroComponent.follower().getPose().getHeading()));
             }
         }
+
         telemetry.update();
+        PedroComponent.follower().update();
+
+        //turretMotor.setPower(turretControl.calculate(turretMotor.getState()));
     }
 
     @Override
