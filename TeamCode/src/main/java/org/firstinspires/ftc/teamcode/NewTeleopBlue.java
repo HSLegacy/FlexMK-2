@@ -129,6 +129,7 @@ public class NewTeleopBlue extends NextFTCOpMode {
         if(Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() < -1100 && Spindexer.INSTANCE.spindexer.getMotor().getCurrentPosition() > -1120){
             Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(160));
         }
+        turret.lockOnUpdate(telemetry);
 
     }
 
@@ -145,6 +146,7 @@ public class NewTeleopBlue extends NextFTCOpMode {
         turret.turretControl.setGoal(new KineticState(0));
 
         limitSwitch = hardwareMap.get(DigitalChannel.class, "limitSwitch");
+        PedroComponent.follower().setPose(new Pose(0,0, Math.toRadians(180)));
     }
 
     @Override
