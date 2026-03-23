@@ -11,7 +11,6 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
-import org.firstinspires.ftc.teamcode.subSystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subSystems.Turret;
 
 import dev.nextftc.bindings.BindingManager;
@@ -76,7 +75,7 @@ public class NewTeleopRed extends NextFTCOpMode {
         Spindexer.INSTANCE.intakePosition.schedule();
         FlyWheel.INSTANCE.isStarted = true;
         Spindexer.INSTANCE.isStarted = true;
-        turret.turretPower = true;
+        turret.opModeIsStarted = true;
         driverControlled.schedule();
         Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(160));
         fire.whenBecomesTrue(() -> fireFuction());
