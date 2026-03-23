@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode;
 import com.pedropathing.ftc.FTCCoordinates;
 import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -35,6 +36,10 @@ public class TestTeleop extends NextFTCOpMode {
             .build();
 
     public MotorEx turretMotor = new MotorEx("turret");
+
+    GoBildaPinpointDriver odo;
+
+
     DriverControlledCommand driverControlled = new PedroDriverControlled(
             Gamepads.gamepad1().leftStickX(),
             Gamepads.gamepad1().leftStickY().negate(),
@@ -56,10 +61,17 @@ public class TestTeleop extends NextFTCOpMode {
     @Override
     public void onInit() {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-
+        odo = hardwareMap.get(GoBildaPinpointDriver.class,"odo");
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
+
+        odo.setOffsets(-84.0, -168.0, DistanceUnit.MM);
+        odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+
+        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+
+        odo.resetPosAndIMU();
 
         PedroComponent.follower().setStartingPose(new Pose(72,72, Math.toRadians(90)));
 
@@ -75,7 +87,7 @@ public class TestTeleop extends NextFTCOpMode {
         return new Pose(pose.getX(d) + 72, pose.getY(d) + 72, pose.getHeading(AngleUnit.RADIANS), FTCCoordinates.INSTANCE).getAsCoordinateSystem(PedroCoordinates.INSTANCE);
     }
     private Pose getFTCPoseAsPedro(Pose2D ftcPose){
-            return new Pose(ftcPose.getY(DistanceUnit.INCH) + 72, Math.abs(ftcPose.getX(DistanceUnit.INCH) - 72));
+            return new Pose(ftcPose.getY(DistanceUnit.INCH) + 72, Math.abs(ftcPose.getX(DistanceUnit.INCH) - 72), ftcPose.getHeading(AngleUnit.RADIANS));
     }
 
     public Pose2D botpose2D;
@@ -107,7 +119,7 @@ public class TestTeleop extends NextFTCOpMode {
 
         if(result != null){
             if(result.isValid()){
-                botpose2D = new Pose2D(DistanceUnit.INCH, result.getBotpose().getPosition().x * 39.37008 , result.getBotpose().getPosition().y * 39.37008, AngleUnit.RADIANS, PedroComponent.follower().getHeading());
+                botpose2D = new Pose2D(DistanceUnit.INCH, result.getBotpose().getPosition().x, result.getBotpose().getPosition().y, AngleUnit.RADIANS, odo.getHeading(AngleUnit.RADIANS));
                 botposeAsPedro = getFTCPoseAsPedro(botpose2D);
 
 
@@ -118,12 +130,15 @@ public class TestTeleop extends NextFTCOpMode {
                 telemetry.addData("Limelight Coordinates As Pedro: ", getFTCPoseAsPedro(botpose2D));
                 telemetry.addData("Degrees To Turn from Zero", degreesToTurnFromZero);
 
-                PedroComponent.follower().setPose(new Pose(botposeAsPedro.getX(), botposeAsPedro.getY(), PedroComponent.follower().getHeading()));
+                odo.setPosition(botpose2D);
+
             }
         }
 
 
+        PedroComponent.follower().setPose(getFTCPoseAsPedro(odo.getPosition()));
         telemetry.update();
+        odo.update();
        //PedroComponent.follower().update();
 
         //turretMotor.setPower(turretControl.calculate(turretMotor.getState()));
