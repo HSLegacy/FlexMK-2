@@ -4,14 +4,12 @@ import static dev.nextftc.bindings.Bindings.button;
 import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
 import com.pedropathing.geometry.Pose;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
-import org.firstinspires.ftc.teamcode.subSystems.Spindexer;
 import org.firstinspires.ftc.teamcode.subSystems.Turret;
 
 import dev.nextftc.bindings.BindingManager;
@@ -37,7 +35,7 @@ public class NewTeleopBlue extends NextFTCOpMode {
     CRServoEx upTakeWheel = new CRServoEx("upTakeWheel");
     ServoEx gate = new ServoEx("gate");
     ServoEx hood = new ServoEx("hood");
-    Turret turret = Turret.getInstance(limelight);
+    Turret turret = Turret.INSTANCE;
 
     private DigitalChannel limitSwitch = null;
 
@@ -76,7 +74,7 @@ public class NewTeleopBlue extends NextFTCOpMode {
         Spindexer.INSTANCE.intakePosition.schedule();
         FlyWheel.INSTANCE.isStarted = true;
         Spindexer.INSTANCE.isStarted = true;
-        turret.turretPower = true;
+        turret.opModeIsStarted = true;
         driverControlled.schedule();
         Spindexer.INSTANCE.spindexerControl.setGoal(new KineticState(160));
         fire.whenBecomesTrue(() -> fireFuction());

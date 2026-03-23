@@ -59,13 +59,9 @@ public class FlyWheel implements Subsystem {
         telemetryManager.getTelemetry().addData("right state", bottomFW.getState().toString());
         telemetryManager.getTelemetry().addData("goal: ",goal);
 
-    /*    FlyWheelControl = ControlSystem.builder()
-                .velPid(FlyWheelConstants.P,FlyWheelConstants.I,FlyWheelConstants.D) //.008 0 0.002
-                .elevatorFF(0.03)
-                .build();
-    */
         telemetryManager.getTelemetry().update();
         manager.update();
+
         if(isStarted) {
             topFW.setPower(FlyWheelControl.calculate(topFW.getState()));
             bottomFW.setPower(FlyWheelControl.calculate(new KineticState(bottomFW.getCurrentPosition(), abs(bottomFW.getVelocity()))));
