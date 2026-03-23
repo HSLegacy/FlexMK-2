@@ -34,10 +34,10 @@ public class TestTeleop extends NextFTCOpMode {
             .elevatorFF(0)
             .build();
 
-    public MotorEx turretMotor = new MotorEx("turretMotor");
+    public MotorEx turretMotor = new MotorEx("turret");
     DriverControlledCommand driverControlled = new PedroDriverControlled(
+            Gamepads.gamepad1().leftStickX(),
             Gamepads.gamepad1().leftStickY().negate(),
-            Gamepads.gamepad1().leftStickX().negate(),
             Gamepads.gamepad1().rightStickX().negate(),
             false
     );
@@ -56,6 +56,7 @@ public class TestTeleop extends NextFTCOpMode {
     @Override
     public void onInit() {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
+
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
@@ -97,7 +98,7 @@ public class TestTeleop extends NextFTCOpMode {
 
         LLResult result = limelight.getLatestResult();
 
-        telemetry.addData("PedroLocalizer", PedroComponent.follower().getPose());
+        telemetry.addData("PedroLocalizer", Math.toDegrees(PedroComponent.follower().getHeading()));
 
         turretPolarCoordinates = turretMotor.getCurrentPosition() * encoderClicksPerDeg + Math.toDegrees(PedroComponent.follower().getPose().getHeading());
 
@@ -106,7 +107,7 @@ public class TestTeleop extends NextFTCOpMode {
 
         if(result != null){
             if(result.isValid()){
-                botpose2D = new Pose2D(DistanceUnit.INCH, result.getBotpose().getPosition().x * 39.37008 , result.getBotpose().getPosition().y * 39.37008, AngleUnit.RADIANS, result.getBotpose().getOrientation().getYaw());
+                botpose2D = new Pose2D(DistanceUnit.INCH, result.getBotpose().getPosition().x * 39.37008 , result.getBotpose().getPosition().y * 39.37008, AngleUnit.RADIANS, PedroComponent.follower().getHeading());
                 botposeAsPedro = getFTCPoseAsPedro(botpose2D);
 
 
@@ -117,12 +118,13 @@ public class TestTeleop extends NextFTCOpMode {
                 telemetry.addData("Limelight Coordinates As Pedro: ", getFTCPoseAsPedro(botpose2D));
                 telemetry.addData("Degrees To Turn from Zero", degreesToTurnFromZero);
 
-                PedroComponent.follower().setPose(new Pose(botposeAsPedro.getX(), botposeAsPedro.getY(), PedroComponent.follower().getPose().getHeading()));
+                PedroComponent.follower().setPose(new Pose(botposeAsPedro.getX(), botposeAsPedro.getY(), PedroComponent.follower().getHeading()));
             }
         }
 
+
         telemetry.update();
-        PedroComponent.follower().update();
+       //PedroComponent.follower().update();
 
         //turretMotor.setPower(turretControl.calculate(turretMotor.getState()));
     }
