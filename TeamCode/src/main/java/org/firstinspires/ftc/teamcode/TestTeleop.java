@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode;
 import com.pedropathing.ftc.FTCCoordinates;
 import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.localization.Localizer;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -55,6 +56,7 @@ public class TestTeleop extends NextFTCOpMode {
 
     @Override
     public void onInit() {
+
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
@@ -105,26 +107,27 @@ public class TestTeleop extends NextFTCOpMode {
         telemetry.addData("turret polar coordinates: ", turretPolarCoordinates);
         telemetry.addData("Turret Encoder: ", turretMotor.getCurrentPosition());
 
+        double savedHeading = PedroComponent.follower().getHeading();
+
         if(result != null){
             if(result.isValid()){
-                botpose2D = new Pose2D(DistanceUnit.INCH, result.getBotpose().getPosition().x * 39.37008 , result.getBotpose().getPosition().y * 39.37008, AngleUnit.RADIANS, PedroComponent.follower().getHeading());
+                botpose2D = new Pose2D(DistanceUnit.INCH, result.getBotpose().getPosition().x * 39.37008 , result.getBotpose().getPosition().y * 39.37008, AngleUnit.RADIANS, savedHeading);
                 botposeAsPedro = getFTCPoseAsPedro(botpose2D);
 
 
-                degreesToTurnFromZero = Math.toDegrees(Math.atan2(targetPoseBlue.getX() - botposeAsPedro.getX(), targetPoseBlue.getY() - botposeAsPedro.getY())) - Math.toDegrees(PedroComponent.follower().getHeading());
+                degreesToTurnFromZero = Math.toDegrees(Math.atan2(targetPoseBlue.getX() - botposeAsPedro.getX(), targetPoseBlue.getY() - botposeAsPedro.getY())) - Math.toDegrees(savedHeading);
 
 
 
                 telemetry.addData("Limelight Coordinates As Pedro: ", getFTCPoseAsPedro(botpose2D));
                 telemetry.addData("Degrees To Turn from Zero", degreesToTurnFromZero);
 
-                PedroComponent.follower().setPose(new Pose(botposeAsPedro.getX(), botposeAsPedro.getY(), PedroComponent.follower().getHeading()));
+                PedroComponent.follower().setPose(new Pose(botposeAsPedro.getX(), botposeAsPedro.getY(), savedHeading));
             }
         }
 
-
         telemetry.update();
-       //PedroComponent.follower().update();
+       PedroComponent.follower().update();
 
         //turretMotor.setPower(turretControl.calculate(turretMotor.getState()));
     }
