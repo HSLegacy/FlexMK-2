@@ -32,7 +32,7 @@ public class FlyWheel implements Subsystem {
     public double goal = 1100;
     public boolean isStarted = false;
     public ControlSystem FlyWheelControl = ControlSystem.builder()
-            .velPid(.005,0.0001, 0.05)
+            .velPid(.009,0, 0.005)
             .elevatorFF(0.03)
             .build();
 
