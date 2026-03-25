@@ -48,9 +48,11 @@ public class Turret implements Subsystem {
     public ServoEx hood = new ServoEx("hood");
 
     public double flyWheelGoal;
-
+    public Pose targetPoseBlue = new Pose(7, 137);
+    double xOffset = 0;
+    double yOffset = 0;
+    public double distanceOffset = 0;
     public static boolean isStarted = false;
-    public double lastHeading = 0;
     public boolean lockToggle;
 
 
@@ -101,16 +103,41 @@ public class Turret implements Subsystem {
        // turretControl.setGoal(new KineticState(encoderTarget));
 
     }
-    public void lockOnUpdate() {
-
-        checkForValidTag();
-        //telemetry.update();
-    }
     private Pose getFTCPoseAsPedro(Pose2D ftcPose) {
         return new Pose(ftcPose.getY(DistanceUnit.INCH) + 72, Math.abs(ftcPose.getX(DistanceUnit.INCH) - 72), PedroComponent.follower().getHeading());
     }
 
     private Pose botCameraPose;
+
+    public void autoFlyWheelRegression(Limelight3A limelight, Telemetry telemetry) {
+
+        LLResult result = limelight.getLatestResult();
+
+        if (result != null) {
+
+            if (result.isValid()) {
+                List<LLResultTypes.FiducialResult> feducialResults = result.getFiducialResults();
+                LLResultTypes.FiducialResult lastResult = feducialResults.get(0);
+
+                if (lastResult != null) {
+/*
+                    if (distanceOffset < -1.3 && distanceOffset > -2.7) {
+                        hood.setPosition(.12);
+                        flyWheelGoal = -148.54471 * lastResult.getCameraPoseTargetSpace().getPosition().z + 949.51591;
+                    } else if (lastResult.getCameraPoseTargetSpace().getPosition().z > -1.3 && lastResult.getCameraPoseTargetSpace().getPosition().z < -0.8) {
+                        hood.setPosition(.065);
+                        flyWheelGoal = -247.70642 * lastResult.getCameraPoseTargetSpace().getPosition().z + 831.65138;
+                    } else if (lastResult.getCameraPoseTargetSpace().getPosition().z < -3) {
+                        hood.setPosition(.13);
+                        flyWheelGoal = -123.48178 * lastResult.getCameraPoseTargetSpace().getPosition().z + 1118.7247;
+                    }
+*/
+                    telemetry.addData("Function y: ", flyWheelGoal);
+                }
+            }
+        }
+    }
+
     public void relocalizationUpdate(){
         LLResult result = limelight.getLatestResult();
         Pose2D botpose2D;
@@ -136,13 +163,11 @@ public class Turret implements Subsystem {
 
         }
     }
-    Runnable resetButton() {
+     public void resetButton() {
         if (relocalizeToggle) {
             PedroComponent.follower().setPose(botCameraPose);
         }
-        return null;
     }
-//hi
 
     @Override
     public void initialize () {
@@ -150,6 +175,11 @@ public class Turret implements Subsystem {
 
     @Override
     public void periodic () {
+
+        xOffset = PedroComponent.follower().getPose().getX() - targetPoseBlue.getX();
+        yOffset = PedroComponent.follower().getPose().getY() - targetPoseBlue.getY();
+        distanceOffset = Math.sqrt(Math.pow(xOffset, 2) + Math.pow(yOffset, 2));
+
         if (opModeIsStarted) {
             //turretMotor.setPower(turretControl.calculate(turretMotor.getState()));
             lockOnUpdate();
