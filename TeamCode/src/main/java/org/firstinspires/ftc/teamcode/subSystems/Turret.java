@@ -73,7 +73,9 @@ public class Turret implements Subsystem {
             }
         }
     }
-
+    public void lockOnUpdate(){
+        checkForValidTag();
+    }
     private void turretMovement(LLResult result){
         List<LLResultTypes.FiducialResult> feducialResults = result.getFiducialResults();
 
