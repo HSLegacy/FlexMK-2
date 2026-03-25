@@ -36,7 +36,7 @@ public class Constants {
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
             .xVelocity(70.627)
             .yVelocity(57.89)
-            .useBrakeModeInTeleOp(false);
+            .useBrakeModeInTeleOp(true);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(-3)
