@@ -30,6 +30,7 @@ public class Turret implements Subsystem {
     private static Limelight3A limelight;
 
     private static Telemetry telemetry;
+    public boolean relocalizeToggle;
 
     private Turret() {}
 
@@ -47,6 +48,7 @@ public class Turret implements Subsystem {
     public ServoEx hood = new ServoEx("hood");
 
     public double flyWheelGoal;
+
     public static boolean isStarted = false;
     public double lastHeading = 0;
     public boolean lockToggle;
@@ -102,7 +104,42 @@ public class Turret implements Subsystem {
 
         checkForValidTag();
         //telemetry.update();
+    }
+    private Pose getFTCPoseAsPedro(Pose2D ftcPose) {
+        return new Pose(ftcPose.getY(DistanceUnit.INCH) + 72, Math.abs(ftcPose.getX(DistanceUnit.INCH) - 72), PedroComponent.follower().getHeading());
+    }
 
+    private Pose botCameraPose;
+    public void relocalizationUpdate(){
+        LLResult result = limelight.getLatestResult();
+        Pose2D botpose2D;
+        Pose botPoseAsPedro;
+
+
+        if (result != null) {
+            if (result.isValid()) {
+
+                relocalizeToggle = true;
+
+                botpose2D = new Pose2D(DistanceUnit.INCH, result.getBotpose().getPosition().x * 39.37008, result.getBotpose().getPosition().y * 39.37008, AngleUnit.RADIANS, PedroComponent.follower().getHeading());
+                botPoseAsPedro = getFTCPoseAsPedro(botpose2D);
+
+
+                relocalizeToggle = true;
+                telemetry.addData("Limelight Coordinates As Pedro: ", getFTCPoseAsPedro(botpose2D));
+
+                botCameraPose = new Pose(botPoseAsPedro.getX(), botPoseAsPedro.getY(), PedroComponent.follower().getHeading());
+            } else {
+                relocalizeToggle = false;
+            }
+
+        }
+    }
+    Runnable resetButton() {
+        if (relocalizeToggle) {
+            PedroComponent.follower().setPose(botCameraPose);
+        }
+        return null;
     }
 
 
