@@ -119,29 +119,35 @@ public class Turret implements Subsystem {
                 LLResultTypes.FiducialResult lastResult = feducialResults.get(0);
 
                 if (lastResult != null) {
-/*
-                    if (distanceOffset < -1.3 && distanceOffset > -2.7) {
-                        hood.setPosition(.12);
-                        flyWheelGoal = -148.54471 * lastResult.getCameraPoseTargetSpace().getPosition().z + 949.51591;
-                    } else if (lastResult.getCameraPoseTargetSpace().getPosition().z > -1.3 && lastResult.getCameraPoseTargetSpace().getPosition().z < -0.8) {
-                        hood.setPosition(.065);
-                        flyWheelGoal = -247.70642 * lastResult.getCameraPoseTargetSpace().getPosition().z + 831.65138;
-                    } else if (lastResult.getCameraPoseTargetSpace().getPosition().z < -3) {
-                        hood.setPosition(.13);
-                        flyWheelGoal = -123.48178 * lastResult.getCameraPoseTargetSpace().getPosition().z + 1118.7247;
+
+                    //Close launch zone regression
+                    if (distanceOffset < 28) {
+                        hood.setPosition(0);
+                        flyWheelGoal = 5.457 * distanceOffset + 948.3328;
+                    } else if (distanceOffset > 28 && distanceOffset < 46) {
+                        hood.setPosition(.2);
+                        flyWheelGoal = 6.60764 * distanceOffset + 863.9963;
+                    } else if (distanceOffset > 46 && distanceOffset < 58) {
+                        hood.setPosition(.4);
+                        flyWheelGoal = 5.04371 * distanceOffset + 907.03093;
+                    } else if (distanceOffset > 58 && distanceOffset < 70) {
+                        hood.setPosition(.05);
+                        flyWheelGoal = 8.54336 * distanceOffset + 703.40026;
+                    } else if (distanceOffset > 70 && distanceOffset < 85) {
+                        hood.setPosition(.65);
+                        flyWheelGoal =6.77966 * distanceOffset +820.20339;
                     }
-*/
+
                     telemetry.addData("Function y: ", flyWheelGoal);
                 }
             }
         }
     }
 
-    public void relocalizationUpdate(){
+    public void relocalizationUpdate(Limelight3A limelight, Telemetry telemetry){
         LLResult result = limelight.getLatestResult();
         Pose2D botpose2D;
         Pose botPoseAsPedro;
-
 
         if (result != null) {
             if (result.isValid()) {

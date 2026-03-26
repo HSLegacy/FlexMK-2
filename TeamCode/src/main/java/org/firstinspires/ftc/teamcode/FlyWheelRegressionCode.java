@@ -13,8 +13,13 @@ import dev.nextftc.control.KineticState;
 import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.core.components.SubsystemComponent;
 import dev.nextftc.extensions.pedro.PedroComponent;
+import dev.nextftc.extensions.pedro.PedroDriverControlled;
+import dev.nextftc.ftc.Gamepads;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
+import dev.nextftc.hardware.driving.DriverControlledCommand;
+import dev.nextftc.hardware.impl.CRServoEx;
+import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.impl.ServoEx;
 
 @TeleOp(name = "FlyWheelRegressionCode")
@@ -22,10 +27,14 @@ import dev.nextftc.hardware.impl.ServoEx;
 public class FlyWheelRegressionCode extends NextFTCOpMode {
 
     ServoEx hood = new ServoEx("hood");
+    MotorEx intake = new MotorEx("intake");
+    CRServoEx uptake = new CRServoEx("uptake");
 
-    public static Limelight3A limelight = null;
+
+    private static Limelight3A limelight;
 
     Turret turret = Turret.getInstance(limelight, telemetry);
+
 
     public FlyWheelRegressionCode() {
         addComponents(
@@ -43,7 +52,7 @@ public class FlyWheelRegressionCode extends NextFTCOpMode {
     @Override
     public void onUpdate() {
 
-        turret.relocalizationUpdate();
+        turret.relocalizationUpdate(limelight, telemetry);
 
         if(gamepad1.y){
             FlyWheel.INSTANCE.FlyWheelControl.setGoal(new KineticState(0, FlyWheel.INSTANCE.FlyWheelControl.getGoal().getVelocity()+100));
@@ -67,6 +76,14 @@ public class FlyWheelRegressionCode extends NextFTCOpMode {
 
         if(gamepad1.right_bumper){
             turret.resetButton();
+        }
+
+        if(gamepad1.left_bumper){
+            intake.setPower(-1);
+            uptake.setPower(1);
+        }else{
+            intake.setPower(0);
+            uptake.setPower(0);
         }
 
         telemetry.addData("Distance from goal: ", turret.distanceOffset);
