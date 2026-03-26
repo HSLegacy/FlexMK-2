@@ -17,11 +17,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.subSystems.Turret;
 
 import dev.nextftc.bindings.BindingManager;
 import dev.nextftc.bindings.Button;
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.core.components.BindingsComponent;
+import dev.nextftc.core.components.SubsystemComponent;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.extensions.pedro.PedroDriverControlled;
 import dev.nextftc.ftc.Gamepads;
@@ -30,7 +32,7 @@ import dev.nextftc.ftc.components.BulkReadComponent;
 import dev.nextftc.hardware.driving.DriverControlledCommand;
 import dev.nextftc.hardware.impl.MotorEx;
 
-@TeleOp(name = "Test OpMode")
+@TeleOp(name = "Test Auto")
 
 public class TestTeleop extends NextFTCOpMode {
 
@@ -48,15 +50,18 @@ public class TestTeleop extends NextFTCOpMode {
             false
     );
 
+    Turret turret = Turret.getInstance(limelight, telemetry);
     public TestTeleop() {
         addComponents(
                 new PedroComponent(Constants::createFollower),
                 BulkReadComponent.INSTANCE,
-                BindingsComponent.INSTANCE
+                BindingsComponent.INSTANCE,
+                new SubsystemComponent(turret)
         );
     }
 
     public static Limelight3A limelight = null;
+
 
     @Override
     public void onInit() {
@@ -76,7 +81,8 @@ public class TestTeleop extends NextFTCOpMode {
     public void onStartButtonPressed() {
         turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         PedroComponent.follower().setPose(new Pose(0,0,0));
-        driverControlled.schedule();
+            driverControlled.schedule();
+        turret.opModeIsStarted = true;
     }
 
     private Pose getRobotPoseFromCamera(Pose2D pose, DistanceUnit d) {
@@ -116,7 +122,6 @@ public class TestTeleop extends NextFTCOpMode {
         telemetry.addData("PedroLocalizer", Math.toDegrees(PedroComponent.follower().getHeading()));
         telemetry.addData("Pinpoint Heading", pinpoint.getHeading(AngleUnit.DEGREES));
 
-        turretPolarCoordinates = turretMotor.getCurrentPosition() * encoderClicksPerDeg + Math.toDegrees(PedroComponent.follower().getPose().getHeading());
 
         telemetry.addData("turret polar coordinates: ", turretPolarCoordinates);
         telemetry.addData("Turret Encoder: ", turretMotor.getCurrentPosition());

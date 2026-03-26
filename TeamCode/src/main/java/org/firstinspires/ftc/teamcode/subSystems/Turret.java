@@ -44,7 +44,7 @@ public class Turret implements Subsystem {
         return single_instance;
     }
 
-    public MotorEx turretMotor = new MotorEx("turretMotor");
+    public MotorEx turretMotor = new MotorEx("turret");
     public ServoEx hood = new ServoEx("hood");
 
     public double flyWheelGoal;
@@ -73,33 +73,36 @@ public class Turret implements Subsystem {
             }
         }
     }
-
+    public void lockOnUpdate(){
+        checkForValidTag();
+    }
     private void turretMovement(LLResult result){
         List<LLResultTypes.FiducialResult> feducialResults = result.getFiducialResults();
 
         LLResultTypes.FiducialResult lastResult = feducialResults.get(0);
-        Pose2D targetPosition;
-        Pose botPosePedro = new Pose(0,0,0); // left as zero to indicate values that should be put in later
+        Pose targetPosition;
+        Pose targetPoseBlue = new Pose(7, 137);
+        Pose targetPoseRed = new Pose(7, 137);
 
-
-        PedroComponent.follower().setPose(botPosePedro); // update localizer
+        double turretPolarCoordinates = turretMotor.getCurrentPosition() * encoderClicksPerDeg + Math.toDegrees(PedroComponent.follower().getPose().getHeading());
 
         switch(lastResult.getFiducialId()){
             case 22:
-                targetPosition = new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS, 0); //set to april tag postition coordinates later.
+                targetPosition = targetPoseBlue;
                 break;
             case 21:
-                targetPosition = new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS, 0); //set to april tag postition coordinates later.
+                targetPosition = targetPoseRed;
                 break;
             default:
                 return; // don't run anymore code if the motif is detected
         }
-        double encoderTarget = MathUtils.clamp(0, -1197, 1197); // todo: trig to figure out what the heck
 
+        double polarCoordinateTarget = turretPolarCoordinates + Math.atan2(targetPosition.getY(), targetPosition.getX());
 
-
-        turretControl.setGoal(new KineticState(encoderTarget));
-
+        double encoderTarget = MathUtils.clamp(polarCoordinateTarget, -1197, 1197);
+        telemetry.addData("encoderTarget: ", encoderTarget);
+        telemetry.update();
+       // turretControl.setGoal(new KineticState(encoderTarget));
 
     }
     private Pose getFTCPoseAsPedro(Pose2D ftcPose) {
@@ -186,7 +189,8 @@ public class Turret implements Subsystem {
         distanceOffset = Math.sqrt(Math.pow(xOffset, 2) + Math.pow(yOffset, 2));
 
         if (opModeIsStarted) {
-            turretMotor.setPower(turretControl.calculate(turretMotor.getState()));
+            //turretMotor.setPower(turretControl.calculate(turretMotor.getState()));
+            lockOnUpdate();
         }
     }
 }
