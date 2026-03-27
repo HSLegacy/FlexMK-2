@@ -134,7 +134,7 @@ public class Turret implements Subsystem {
                         hood.setPosition(.4);
                         flyWheelGoal = 5.04371 * distanceOffset + 907.03093;
                     } else if (distanceOffset > 58 && distanceOffset < 70) {
-                        hood.setPosition(.05);
+                        hood.setPosition(.5);
                         flyWheelGoal = 8.54336 * distanceOffset + 703.40026;
                     } else if (distanceOffset > 70 && distanceOffset < 90) {
                         hood.setPosition(.65);

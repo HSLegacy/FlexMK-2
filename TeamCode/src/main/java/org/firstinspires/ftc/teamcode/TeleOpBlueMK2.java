@@ -1,15 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
 import static dev.nextftc.bindings.Bindings.button;
-import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
 import com.pedropathing.geometry.Pose;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
@@ -30,9 +26,9 @@ import dev.nextftc.hardware.impl.CRServoEx;
 import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.impl.ServoEx;
 
-@TeleOp(name = "TeleOpMK2")
+@TeleOp(name = "TeleOpBlueMK2")
 
-public class TeleOpMK2 extends NextFTCOpMode {
+public class TeleOpBlueMK2 extends NextFTCOpMode {
 
     MotorEx intake = new MotorEx("intake");
     MotorEx turretMotor = new MotorEx("turret");
@@ -42,14 +38,14 @@ public class TeleOpMK2 extends NextFTCOpMode {
 
     Button relocalize = button(() -> gamepad1.x);
     DriverControlledCommand driverControlled = new PedroDriverControlled(
-            Gamepads.gamepad1().leftStickY().negate(),
-            Gamepads.gamepad1().leftStickX().negate(),
+            Gamepads.gamepad1().leftStickY(),
+            Gamepads.gamepad1().leftStickX(),
             Gamepads.gamepad1().rightStickX().negate(),
             false
     );
 
     Turret turret = Turret.getInstance(limelight, telemetry);
-    public TeleOpMK2() {
+    public TeleOpBlueMK2() {
         addComponents(
                 new PedroComponent(Constants::createFollower),
                 new SubsystemComponent(FlyWheel.INSTANCE),
@@ -63,6 +59,7 @@ public class TeleOpMK2 extends NextFTCOpMode {
     public void onStartButtonPressed() {
         FlyWheel.INSTANCE.isStarted = true;
         driverControlled.schedule();
+
         relocalize.whenBecomesTrue(() -> turret.resetButton());
         button(() -> gamepad1.a)
                 .toggleOnBecomesTrue()
@@ -98,6 +95,7 @@ public class TeleOpMK2 extends NextFTCOpMode {
         turret.autoFlyWheelRegression(limelight, telemetry);
 
         FlyWheel.INSTANCE.FlyWheelControl.setGoal(new KineticState(0, turret.flyWheelGoal));
+        telemetry.addData("localizper:", PedroComponent.follower().getPose());
     }
 
     public static Limelight3A limelight = null;
