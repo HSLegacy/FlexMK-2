@@ -49,6 +49,7 @@ public class TestTeleop extends NextFTCOpMode {
             Gamepads.gamepad1().rightStickX().negate(),
             false
     );
+    public static Limelight3A limelight = null;
 
     Turret turret = Turret.getInstance(limelight, telemetry);
     public TestTeleop() {
@@ -60,7 +61,6 @@ public class TestTeleop extends NextFTCOpMode {
         );
     }
 
-    public static Limelight3A limelight = null;
 
 
     @Override
@@ -116,15 +116,8 @@ public class TestTeleop extends NextFTCOpMode {
             resetButton();
         }
 
-        telemetry.addData("Degrees To Turn from Zero", degreesToTurnFromZero);
         LLResult result = limelight.getLatestResult();
 
-        telemetry.addData("PedroLocalizer", Math.toDegrees(PedroComponent.follower().getHeading()));
-        telemetry.addData("Pinpoint Heading", pinpoint.getHeading(AngleUnit.DEGREES));
-
-
-        telemetry.addData("turret polar coordinates: ", turretPolarCoordinates);
-        telemetry.addData("Turret Encoder: ", turretMotor.getCurrentPosition());
 
         if (result != null) {
             if (result.isValid()) {
@@ -139,8 +132,6 @@ public class TestTeleop extends NextFTCOpMode {
 
 
                 localizerSwitch = true;
-                telemetry.addData("Limelight Coordinates As Pedro: ", getFTCPoseAsPedro(botpose2D));
-                telemetry.addData("Degrees To Turn from Zero", degreesToTurnFromZero);
 
                 botCameraPose = new Pose(botposeAsPedro.getX(), botposeAsPedro.getY(), PedroComponent.follower().getHeading());
             } else {
@@ -149,8 +140,6 @@ public class TestTeleop extends NextFTCOpMode {
 
         }
 
-        telemetry.addData("Pedro Pos", PedroComponent.follower().getPose());
-        telemetry.addData("botCameraPose", botCameraPose);
         telemetry.update();
         PedroComponent.follower().update();
 

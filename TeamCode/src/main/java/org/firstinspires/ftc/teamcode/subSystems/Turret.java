@@ -4,6 +4,7 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import dev.nextftc.control.ControlSystem;
@@ -23,7 +24,7 @@ import java.util.List;
 
 public class Turret implements Subsystem {
     public boolean opModeIsStarted = false;
-    public double encoderClicksPerDeg = 5081 / 360.0; //limits: -1197, 1197
+    public double encoderClicksPerDeg = 360d / 1800d; //limits: -1197, 1197
 
     private static Turret single_instance = null;
 
@@ -48,9 +49,10 @@ public class Turret implements Subsystem {
     public ServoEx hood = new ServoEx("hood");
 
     public double flyWheelGoal;
-    public Pose targetPoseBlue = new Pose(7, 137);
     double xOffset = 0;
     double yOffset = 0;
+    Pose targetPoseBlue = new Pose(7, 137);
+    Pose targetPoseRed = new Pose(137, 137);
     public double distanceOffset = 0;
     public static boolean isStarted = false;
     public boolean lockToggle;
@@ -76,16 +78,31 @@ public class Turret implements Subsystem {
     public void lockOnUpdate(){
         checkForValidTag();
     }
+
+    private double convertTo360Coordinates(double angleInDegrees){
+        if(angleInDegrees < 0){
+            return angleInDegrees + 360;
+        }else{
+            return angleInDegrees;
+        }
+    }
     private void turretMovement(LLResult result){
         List<LLResultTypes.FiducialResult> feducialResults = result.getFiducialResults();
 
         LLResultTypes.FiducialResult lastResult = feducialResults.get(0);
         Pose targetPosition;
-        Pose targetPoseBlue = new Pose(7, 137);
-        Pose targetPoseRed = new Pose(7, 137);
 
-        double turretPolarCoordinates = turretMotor.getCurrentPosition() * encoderClicksPerDeg + Math.toDegrees(PedroComponent.follower().getPose().getHeading());
+        double turretRobotCoordinates = convertTo360Coordinates(turretMotor.getCurrentPosition() * encoderClicksPerDeg);
 
+        telemetry.addData("Robot Polar Coordinates: ", turretRobotCoordinates);
+
+        double turretPolarCoordinates;
+
+        turretPolarCoordinates =  turretRobotCoordinates - convertTo360Coordinates(Math.toDegrees(PedroComponent.follower().getPose().getHeading()));
+
+        telemetry.addData("degree conversion: ", Math.toDegrees(PedroComponent.follower().getPose().getHeading()));
+        targetPosition = targetPoseRed;
+        /*
         switch(lastResult.getFiducialId()){
             case 22:
                 targetPosition = targetPoseBlue;
@@ -94,14 +111,14 @@ public class Turret implements Subsystem {
                 targetPosition = targetPoseRed;
                 break;
             default:
-                return; // don't run anymore code if the motif is detected
+                targetPosition = targetPoseBlue;
         }
+         */
 
-        double polarCoordinateTarget = turretPolarCoordinates + Math.atan2(targetPosition.getY(), targetPosition.getX());
+        double polarCoordinateTarget = turretPolarCoordinates + Math.toDegrees(Math.atan2(targetPosition.getY(), targetPosition.getX()));
 
-        double encoderTarget = MathUtils.clamp(polarCoordinateTarget, -1197, 1197);
-        telemetry.addData("encoderTarget: ", encoderTarget);
-        telemetry.update();
+        telemetry.addData("polar Corrdinate Target: ", polarCoordinateTarget);
+        telemetry.addData("turretPolarCoordinates", turretPolarCoordinates);
        // turretControl.setGoal(new KineticState(encoderTarget));
 
     }
@@ -182,6 +199,7 @@ public class Turret implements Subsystem {
 
     @Override
     public void initialize () {
+        turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     @Override
@@ -193,7 +211,9 @@ public class Turret implements Subsystem {
 
         if (opModeIsStarted) {
             //turretMotor.setPower(turretControl.calculate(turretMotor.getState()));
+            telemetry.addData("turret Clicks: ", turretMotor.getCurrentPosition());
             lockOnUpdate();
+
         }
     }
 }
