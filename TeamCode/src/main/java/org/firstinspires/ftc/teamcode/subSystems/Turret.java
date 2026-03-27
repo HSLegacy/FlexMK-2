@@ -136,9 +136,12 @@ public class Turret implements Subsystem {
                     } else if (distanceOffset > 58 && distanceOffset < 70) {
                         hood.setPosition(.05);
                         flyWheelGoal = 8.54336 * distanceOffset + 703.40026;
-                    } else if (distanceOffset > 70 && distanceOffset < 85) {
+                    } else if (distanceOffset > 70 && distanceOffset < 90) {
                         hood.setPosition(.65);
-                        flyWheelGoal =6.77966 * distanceOffset +820.20339;
+                        flyWheelGoal = 6.77966 * distanceOffset +820.20339;
+                    } else if (distanceOffset > 90) {
+                        hood.setPosition(.9);
+                        flyWheelGoal = 3.10128 * distanceOffset + 1262.21009;
                     }
 
                     telemetry.addData("Function y: ", flyWheelGoal);

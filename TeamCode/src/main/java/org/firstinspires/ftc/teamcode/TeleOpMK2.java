@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
+import org.firstinspires.ftc.teamcode.subSystems.Turret;
 
 import dev.nextftc.bindings.BindingManager;
 import dev.nextftc.bindings.Button;
@@ -39,6 +40,7 @@ public class TeleOpMK2 extends NextFTCOpMode {
     ServoEx gate = new ServoEx("door");
     ServoEx hood = new ServoEx("hood");
 
+    Button relocalize = button(() -> gamepad1.x);
     DriverControlledCommand driverControlled = new PedroDriverControlled(
             Gamepads.gamepad1().leftStickY().negate(),
             Gamepads.gamepad1().leftStickX().negate(),
@@ -46,11 +48,12 @@ public class TeleOpMK2 extends NextFTCOpMode {
             false
     );
 
-
+    Turret turret = Turret.getInstance(limelight, telemetry);
     public TeleOpMK2() {
         addComponents(
                 new PedroComponent(Constants::createFollower),
                 new SubsystemComponent(FlyWheel.INSTANCE),
+                new SubsystemComponent(turret),
                 BulkReadComponent.INSTANCE,
                 BindingsComponent.INSTANCE
         );
@@ -60,6 +63,7 @@ public class TeleOpMK2 extends NextFTCOpMode {
     public void onStartButtonPressed() {
         FlyWheel.INSTANCE.isStarted = true;
         driverControlled.schedule();
+        relocalize.whenBecomesTrue(() -> turret.resetButton());
         button(() -> gamepad1.a)
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> gate.setPosition(.5))
@@ -89,6 +93,11 @@ public class TeleOpMK2 extends NextFTCOpMode {
         turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         BindingManager.update();
         telemetry.update();
+
+        turret.relocalizationUpdate(limelight, telemetry);
+        turret.autoFlyWheelRegression(limelight, telemetry);
+
+        FlyWheel.INSTANCE.FlyWheelControl.setGoal(new KineticState(0, turret.flyWheelGoal));
     }
 
     public static Limelight3A limelight = null;
