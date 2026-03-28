@@ -25,9 +25,9 @@ import dev.nextftc.hardware.impl.CRServoEx;
 import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.impl.ServoEx;
 
-@TeleOp(name = "TeleOpBlueMK2")
+@TeleOp(name = "TeleOpRedMK2")
 
-public class TeleOpBlueMK2 extends NextFTCOpMode {
+public class TeleOpRedMK2 extends NextFTCOpMode {
 
     MotorEx intake = new MotorEx("intake");
     MotorEx turretMotor = new MotorEx("turret");
@@ -37,14 +37,14 @@ public class TeleOpBlueMK2 extends NextFTCOpMode {
 
     Button relocalize = button(() -> gamepad1.x);
     DriverControlledCommand driverControlled = new PedroDriverControlled(
-            Gamepads.gamepad1().leftStickY(),
-            Gamepads.gamepad1().leftStickX(),
+            Gamepads.gamepad1().leftStickY().negate(),
+            Gamepads.gamepad1().leftStickX().negate(),
             Gamepads.gamepad1().rightStickX().negate(),
             false
     );
 
     Turret turret = Turret.getInstance(limelight, telemetry);
-    public TeleOpBlueMK2() {
+    public TeleOpRedMK2() {
         addComponents(
                 new PedroComponent(Constants::createFollower),
                 new SubsystemComponent(FlyWheel.INSTANCE),
@@ -58,6 +58,7 @@ public class TeleOpBlueMK2 extends NextFTCOpMode {
     public void onStartButtonPressed() {
         FlyWheel.INSTANCE.isStarted = true;
         driverControlled.schedule();
+        turret.opModeIsStarted = true;
 
         relocalize.whenBecomesTrue(() -> turret.resetButton());
         button(() -> gamepad1.a)
@@ -91,9 +92,10 @@ public class TeleOpBlueMK2 extends NextFTCOpMode {
         telemetry.update();
 
         turret.relocalizationUpdate(limelight, telemetry);
-        turret.autoFlyWheelRegressionBlue(limelight, telemetry);
+        turret.autoFlyWheelRegressionRed(limelight, telemetry);
 
         FlyWheel.INSTANCE.FlyWheelControl.setGoal(new KineticState(0, turret.flyWheelGoal));
+
         telemetry.addData("localizper:", PedroComponent.follower().getPose());
     }
 

@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.pedropathing.geometry.Pose;
-import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -10,14 +8,9 @@ import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
 import org.firstinspires.ftc.teamcode.subSystems.Turret;
 
 import dev.nextftc.control.KineticState;
-import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.core.components.SubsystemComponent;
 import dev.nextftc.extensions.pedro.PedroComponent;
-import dev.nextftc.extensions.pedro.PedroDriverControlled;
-import dev.nextftc.ftc.Gamepads;
 import dev.nextftc.ftc.NextFTCOpMode;
-import dev.nextftc.ftc.components.BulkReadComponent;
-import dev.nextftc.hardware.driving.DriverControlledCommand;
 import dev.nextftc.hardware.impl.CRServoEx;
 import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.impl.ServoEx;
@@ -86,7 +79,7 @@ public class FlyWheelRegressionCode extends NextFTCOpMode {
             uptake.setPower(0);
         }
 
-        telemetry.addData("Distance from goal: ", turret.distanceOffset);
+        telemetry.addData("Distance from goal: ", turret.distanceOffsetBlue);
         telemetry.addData("Hood Position: ", hood.getPosition());
         telemetry.addData("leftFlyWheel Speed: ", FlyWheel.INSTANCE.topFW.getVelocity());
         telemetry.addData("rightFlyWheel Speed: ", FlyWheel.INSTANCE.bottomFW.getVelocity());

@@ -5,7 +5,6 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
@@ -18,13 +17,13 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.firstinspires.ftc.teamcode.utilities.MathUtils;
 
 import java.util.List;
 
 public class Turret implements Subsystem {
     public boolean opModeIsStarted = false;
     public double encoderClicksPerDeg = 360d / 1800d; //limits: -1197, 1197
+    public double degsPerClick = 1800d / 360d;
 
     private static Turret single_instance = null;
 
@@ -49,34 +48,31 @@ public class Turret implements Subsystem {
     public ServoEx hood = new ServoEx("hood");
 
     public double flyWheelGoal;
-    double xOffset = 0;
-    double yOffset = 0;
+    double xOffsetBlue = 0;
+    double yOffsetBlue = 0;
+    double xOffsetRed = 0;
+    double yOffsetRed = 0;
     Pose targetPoseBlue = new Pose(7, 137);
-    Pose targetPoseRed = new Pose(137, 137);
-    public double distanceOffset = 0;
+    Pose targetPoseRed = new Pose(137, 141);
+    public double distanceOffsetBlue = 0;
+    public double distanceOffsetRed = 0;
     public static boolean isStarted = false;
     public boolean lockToggle;
 
 
     public ControlSystem turretControl = ControlSystem.builder()
-            .posPid(0.008, 0.0, 0.0001)
+            .posPid(0.0065, 0.0, 0.000008)
             .elevatorFF(0)
             .build();
 
 
-    private void checkForValidTag(){
-        LLResult result = limelight.getLatestResult();
+    public void lockOnUpdate(){
+
 
         telemetry.addData("Pedro Localizer", PedroComponent.follower().getPose());
 
-        if (result != null) {
-            if (result.isValid()) {
-                turretMovement(result);
-            }
-        }
-    }
-    public void lockOnUpdate(){
-        checkForValidTag();
+        turretMovement();
+
     }
 
     private double convertTo360Coordinates(double angleInDegrees){
@@ -86,10 +82,10 @@ public class Turret implements Subsystem {
             return angleInDegrees;
         }
     }
-    private void turretMovement(LLResult result){
-        List<LLResultTypes.FiducialResult> feducialResults = result.getFiducialResults();
 
-        LLResultTypes.FiducialResult lastResult = feducialResults.get(0);
+    public double degreesToTurnCorrected = 0;
+    private void turretMovement(){
+
         Pose targetPosition;
 
         double turretRobotCoordinates = convertTo360Coordinates(turretMotor.getCurrentPosition() * encoderClicksPerDeg);
@@ -98,27 +94,28 @@ public class Turret implements Subsystem {
 
         double turretPolarCoordinates;
 
-        turretPolarCoordinates =  turretRobotCoordinates - convertTo360Coordinates(Math.toDegrees(PedroComponent.follower().getPose().getHeading()));
+        turretPolarCoordinates =  (turretRobotCoordinates + convertTo360Coordinates(Math.toDegrees(PedroComponent.follower().getPose().getHeading()))) % 360;
 
         telemetry.addData("degree conversion: ", Math.toDegrees(PedroComponent.follower().getPose().getHeading()));
         targetPosition = targetPoseRed;
-        /*
-        switch(lastResult.getFiducialId()){
-            case 22:
-                targetPosition = targetPoseBlue;
-                break;
-            case 21:
-                targetPosition = targetPoseRed;
-                break;
-            default:
-                targetPosition = targetPoseBlue;
+
+
+        double polarCoordinateTargetToRobot =  Math.toDegrees(Math.atan2(targetPosition.getY() - PedroComponent.follower().getPose().getY(), targetPosition.getX() - PedroComponent.follower().getPose().getX()));
+        double degreesToTurnRaw = polarCoordinateTargetToRobot - turretPolarCoordinates;
+
+
+        if (degreesToTurnRaw + 360 < Math.abs(degreesToTurnRaw)){
+            degreesToTurnCorrected = degreesToTurnRaw + 360;
+        }else{
+            degreesToTurnCorrected = degreesToTurnRaw;
         }
-         */
 
-        double polarCoordinateTarget = turretPolarCoordinates + Math.toDegrees(Math.atan2(targetPosition.getY(), targetPosition.getX()));
+        telemetry.addData("polar Corrdinate Target to robot: ", polarCoordinateTargetToRobot);
+        telemetry.addData("Deg To Turn Raw: ", degreesToTurnRaw);
+        telemetry.addData("Deg To Turn Corrected: ", degreesToTurnCorrected);
+        telemetry.addData("turret goal: ", turretControl.getGoal().getPosition());
 
-        telemetry.addData("polar Corrdinate Target: ", polarCoordinateTarget);
-        telemetry.addData("turretPolarCoordinates", turretPolarCoordinates);
+        telemetry.addData("Turret Polar: ", turretPolarCoordinates);
        // turretControl.setGoal(new KineticState(encoderTarget));
 
     }
@@ -128,7 +125,7 @@ public class Turret implements Subsystem {
 
     private Pose botCameraPose;
 
-    public void autoFlyWheelRegression(Limelight3A limelight, Telemetry telemetry) {
+    public void autoFlyWheelRegressionBlue(Limelight3A limelight, Telemetry telemetry) {
 
         LLResult result = limelight.getLatestResult();
 
@@ -141,24 +138,63 @@ public class Turret implements Subsystem {
                 if (lastResult != null) {
 
                     //Close launch zone regression
-                    if (distanceOffset < 28) {
+                    if (distanceOffsetBlue < 28) {
                         hood.setPosition(0);
-                        flyWheelGoal = 5.457 * distanceOffset + 948.3328;
-                    } else if (distanceOffset > 28 && distanceOffset < 46) {
+                        flyWheelGoal = 5.457 * distanceOffsetBlue + 948.3328;
+                    } else if (distanceOffsetBlue > 28 && distanceOffsetBlue < 46) {
                         hood.setPosition(.2);
-                        flyWheelGoal = 6.60764 * distanceOffset + 863.9963;
-                    } else if (distanceOffset > 46 && distanceOffset < 58) {
+                        flyWheelGoal = 6.60764 * distanceOffsetBlue + 863.9963;
+                    } else if (distanceOffsetBlue > 46 && distanceOffsetBlue < 58) {
                         hood.setPosition(.4);
-                        flyWheelGoal = 5.04371 * distanceOffset + 907.03093;
-                    } else if (distanceOffset > 58 && distanceOffset < 70) {
+                        flyWheelGoal = 5.04371 * distanceOffsetBlue + 907.03093;
+                    } else if (distanceOffsetBlue > 58 && distanceOffsetBlue < 70) {
                         hood.setPosition(.5);
-                        flyWheelGoal = 8.54336 * distanceOffset + 703.40026;
-                    } else if (distanceOffset > 70 && distanceOffset < 90) {
+                        flyWheelGoal = 8.54336 * distanceOffsetBlue + 703.40026;
+                    } else if (distanceOffsetBlue > 70 && distanceOffsetBlue < 90) {
                         hood.setPosition(.65);
-                        flyWheelGoal = 6.77966 * distanceOffset +820.20339;
-                    } else if (distanceOffset > 90) {
+                        flyWheelGoal = 6.77966 * distanceOffsetBlue +820.20339;
+                    } else if (distanceOffsetBlue > 90) {
                         hood.setPosition(.9);
-                        flyWheelGoal = 3.10128 * distanceOffset + 1262.21009;
+                        flyWheelGoal = 3.10128 * distanceOffsetBlue + 1262.21009;
+                    }
+
+                    telemetry.addData("Function y: ", flyWheelGoal);
+                }
+            }
+        }
+    }
+
+    public void autoFlyWheelRegressionRed(Limelight3A limelight, Telemetry telemetry) {
+
+        LLResult result = limelight.getLatestResult();
+
+        if (result != null) {
+
+            if (result.isValid()) {
+                List<LLResultTypes.FiducialResult> feducialResults = result.getFiducialResults();
+                LLResultTypes.FiducialResult lastResult = feducialResults.get(0);
+
+                if (lastResult != null) {
+
+                    //Close launch zone regression
+                    if (distanceOffsetRed < 28) {
+                        hood.setPosition(0);
+                        flyWheelGoal = 5.457 * distanceOffsetRed + 948.3328;
+                    } else if (distanceOffsetRed > 28 && distanceOffsetRed < 46) {
+                        hood.setPosition(.2);
+                        flyWheelGoal = 6.60764 * distanceOffsetRed + 863.9963;
+                    } else if (distanceOffsetRed > 46 && distanceOffsetRed < 58) {
+                        hood.setPosition(.4);
+                        flyWheelGoal = 5.04371 * distanceOffsetRed + 907.03093;
+                    } else if (distanceOffsetRed > 58 && distanceOffsetRed < 70) {
+                        hood.setPosition(.5);
+                        flyWheelGoal = 8.54336 * distanceOffsetRed + 703.40026;
+                    } else if (distanceOffsetRed > 70 && distanceOffsetRed < 90) {
+                        hood.setPosition(.65);
+                        flyWheelGoal = 6.77966 * distanceOffsetRed +820.20339;
+                    } else if (distanceOffsetRed > 90) {
+                        hood.setPosition(.9);
+                        flyWheelGoal = 3.10128 * distanceOffsetRed + 1262.21009;
                     }
 
                     telemetry.addData("Function y: ", flyWheelGoal);
@@ -200,20 +236,32 @@ public class Turret implements Subsystem {
     @Override
     public void initialize () {
         turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        opModeIsStarted = false;
     }
 
     @Override
     public void periodic () {
 
-        xOffset = PedroComponent.follower().getPose().getX() - targetPoseBlue.getX();
-        yOffset = PedroComponent.follower().getPose().getY() - targetPoseBlue.getY();
-        distanceOffset = Math.sqrt(Math.pow(xOffset, 2) + Math.pow(yOffset, 2));
+        xOffsetBlue = PedroComponent.follower().getPose().getX() - targetPoseBlue.getX();
+        yOffsetBlue = PedroComponent.follower().getPose().getY() - targetPoseBlue.getY();
+        distanceOffsetBlue = Math.sqrt(Math.pow(xOffsetBlue, 2) + Math.pow(yOffsetBlue, 2));
+
+        xOffsetRed = PedroComponent.follower().getPose().getX() - 137; //red regresion position
+        yOffsetRed = PedroComponent.follower().getPose().getY() - 137; //red regression position
+        distanceOffsetRed = Math.sqrt(Math.pow(xOffsetRed, 2) + Math.pow(yOffsetRed, 2));
 
         if (opModeIsStarted) {
-            //turretMotor.setPower(turretControl.calculate(turretMotor.getState()));
+            turretMotor.setPower(turretControl.calculate(turretMotor.getState()));
             telemetry.addData("turret Clicks: ", turretMotor.getCurrentPosition());
             lockOnUpdate();
 
+            if ((turretControl.getGoal().getPosition() + (degreesToTurnCorrected * degsPerClick) > -652 && (turretControl.getGoal().getPosition() + (degreesToTurnCorrected * degsPerClick) < 652)))
+            {
+                turretControl.setGoal(new KineticState(turretMotor.getCurrentPosition() + (degreesToTurnCorrected * degsPerClick)));
+            }
+
         }
+
     }
+
 }

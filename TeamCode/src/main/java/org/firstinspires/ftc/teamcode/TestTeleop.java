@@ -22,6 +22,7 @@ import org.firstinspires.ftc.teamcode.subSystems.Turret;
 import dev.nextftc.bindings.BindingManager;
 import dev.nextftc.bindings.Button;
 import dev.nextftc.control.ControlSystem;
+import dev.nextftc.control.KineticState;
 import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.core.components.SubsystemComponent;
 import dev.nextftc.extensions.pedro.PedroComponent;
@@ -36,10 +37,6 @@ import dev.nextftc.hardware.impl.MotorEx;
 
 public class TestTeleop extends NextFTCOpMode {
 
-    public ControlSystem turretControl = ControlSystem.builder()
-            .posPid(0.008, 0.0, 0.0001)
-            .elevatorFF(0)
-            .build();
 
     public MotorEx turretMotor = new MotorEx("turret");
     public GoBildaPinpointDriver pinpoint;
@@ -114,6 +111,12 @@ public class TestTeleop extends NextFTCOpMode {
 
         if (gamepad1.a){
             resetButton();
+        }
+        if (gamepad1.b){
+            turret.turretControl.setGoal(new KineticState(-300));
+        }
+        else if(gamepad1.y){
+            turret.turretControl.setGoal(new KineticState(0));
         }
 
         LLResult result = limelight.getLatestResult();
