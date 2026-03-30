@@ -52,8 +52,8 @@ public class Turret implements Subsystem {
     double yOffsetBlue = 0;
     double xOffsetRed = 0;
     double yOffsetRed = 0;
-    Pose targetPoseBlue = new Pose(7, 137);
-    Pose targetPoseRed = new Pose(137, 141);
+    Pose targetPoseBlue = new Pose(3, 140);
+    Pose targetPoseRed = new Pose(140, 140);
     public double distanceOffsetBlue = 0;
     public double distanceOffsetRed = 0;
     public static boolean isStarted = false;
@@ -65,16 +65,6 @@ public class Turret implements Subsystem {
             .elevatorFF(0)
             .build();
 
-
-    public void lockOnUpdate(){
-
-
-        telemetry.addData("Pedro Localizer", PedroComponent.follower().getPose());
-
-        turretMovement();
-
-    }
-
     private double convertTo360Coordinates(double angleInDegrees){
         if(angleInDegrees < 0){
             return angleInDegrees + 360;
@@ -84,7 +74,7 @@ public class Turret implements Subsystem {
     }
 
     public double degreesToTurnCorrected = 0;
-    private void turretMovement(){
+    public void turretMovement(boolean isRed){
 
         Pose targetPosition;
 
@@ -97,8 +87,12 @@ public class Turret implements Subsystem {
         turretPolarCoordinates =  (turretRobotCoordinates + convertTo360Coordinates(Math.toDegrees(PedroComponent.follower().getPose().getHeading()))) % 360;
 
         telemetry.addData("degree conversion: ", Math.toDegrees(PedroComponent.follower().getPose().getHeading()));
-        targetPosition = targetPoseRed;
 
+        if (isRed) {
+            targetPosition = targetPoseRed;
+        } else {
+            targetPosition = targetPoseBlue;
+        }
 
         double polarCoordinateTargetToRobot =  Math.toDegrees(Math.atan2(targetPosition.getY() - PedroComponent.follower().getPose().getY(), targetPosition.getX() - PedroComponent.follower().getPose().getX()));
         double degreesToTurnRaw = polarCoordinateTargetToRobot - turretPolarCoordinates;
@@ -155,7 +149,7 @@ public class Turret implements Subsystem {
                         flyWheelGoal = 6.77966 * distanceOffsetBlue +820.20339;
                     } else if (distanceOffsetBlue > 90) {
                         hood.setPosition(.9);
-                        flyWheelGoal = 3.10128 * distanceOffsetBlue + 1262.21009;
+                        flyWheelGoal = 3.10128 * distanceOffsetBlue + 1362.21009; // old value: 1262.21009
                     }
 
                     telemetry.addData("Function y: ", flyWheelGoal);
@@ -216,8 +210,6 @@ public class Turret implements Subsystem {
                 botpose2D = new Pose2D(DistanceUnit.INCH, result.getBotpose().getPosition().x * 39.37008, result.getBotpose().getPosition().y * 39.37008, AngleUnit.RADIANS, PedroComponent.follower().getHeading());
                 botPoseAsPedro = getFTCPoseAsPedro(botpose2D);
 
-
-                relocalizeToggle = true;
                 telemetry.addData("Limelight Coordinates As Pedro: ", getFTCPoseAsPedro(botpose2D));
 
                 botCameraPose = new Pose(botPoseAsPedro.getX(), botPoseAsPedro.getY(), PedroComponent.follower().getHeading());
@@ -246,14 +238,13 @@ public class Turret implements Subsystem {
         yOffsetBlue = PedroComponent.follower().getPose().getY() - targetPoseBlue.getY();
         distanceOffsetBlue = Math.sqrt(Math.pow(xOffsetBlue, 2) + Math.pow(yOffsetBlue, 2));
 
-        xOffsetRed = PedroComponent.follower().getPose().getX() - 137; //red regresion position
-        yOffsetRed = PedroComponent.follower().getPose().getY() - 137; //red regression position
+        xOffsetRed = PedroComponent.follower().getPose().getX() - targetPoseRed.getX(); //red regresion position
+        yOffsetRed = PedroComponent.follower().getPose().getY() - targetPoseRed.getY(); //red regression position
         distanceOffsetRed = Math.sqrt(Math.pow(xOffsetRed, 2) + Math.pow(yOffsetRed, 2));
 
         if (opModeIsStarted) {
             turretMotor.setPower(turretControl.calculate(turretMotor.getState()));
             telemetry.addData("turret Clicks: ", turretMotor.getCurrentPosition());
-            lockOnUpdate();
 
             if ((turretControl.getGoal().getPosition() + (degreesToTurnCorrected * degsPerClick) > -652 && (turretControl.getGoal().getPosition() + (degreesToTurnCorrected * degsPerClick) < 652)))
             {

@@ -2,9 +2,11 @@ package org.firstinspires.ftc.teamcode;
 
 import static dev.nextftc.bindings.Bindings.button;
 
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
@@ -30,12 +32,12 @@ import dev.nextftc.hardware.impl.ServoEx;
 public class TeleOpBlueMK2 extends NextFTCOpMode {
 
     MotorEx intake = new MotorEx("intake");
-    MotorEx turretMotor = new MotorEx("turret");
     CRServoEx uptake = new CRServoEx("uptake");
     ServoEx gate = new ServoEx("door");
     ServoEx hood = new ServoEx("hood");
 
     Button relocalize = button(() -> gamepad1.x);
+    Button resetHeading = button(() -> gamepad1.y);
     DriverControlledCommand driverControlled = new PedroDriverControlled(
             Gamepads.gamepad1().leftStickY(),
             Gamepads.gamepad1().leftStickX(),
@@ -53,23 +55,25 @@ public class TeleOpBlueMK2 extends NextFTCOpMode {
                 BindingsComponent.INSTANCE
         );
     }
+    ElapsedTime timer;
 
     @Override
     public void onStartButtonPressed() {
+        gate.setPosition(0.5);
         FlyWheel.INSTANCE.isStarted = true;
         driverControlled.schedule();
+        turret.opModeIsStarted = true;
+
+        timer = new ElapsedTime();
 
         relocalize.whenBecomesTrue(() -> turret.resetButton());
+        resetHeading.whenBecomesTrue(() -> PedroComponent.follower().setPose(new Pose(0, 0, Math.toRadians(180))));
         button(() -> gamepad1.a)
-                .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> gate.setPosition(.5))
-                .whenBecomesFalse(() -> gate.setPosition(1));
+                .whenBecomesTrue(() -> shootTimer());
         button(() -> gamepad1.b)
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> runFlyWheel())
                 .whenBecomesFalse(() -> stopFlyWheel());
-        button(() -> gamepad1.dpad_up)
-                .whenBecomesTrue(() -> hood.setPosition(.8));
         button(() -> gamepad1.left_bumper)
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> intake.setPower(-1))
@@ -86,15 +90,20 @@ public class TeleOpBlueMK2 extends NextFTCOpMode {
 
     @Override
     public void onUpdate() {
-        turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         BindingManager.update();
         telemetry.update();
 
         turret.relocalizationUpdate(limelight, telemetry);
         turret.autoFlyWheelRegressionBlue(limelight, telemetry);
+        turret.turretMovement(false);
 
         FlyWheel.INSTANCE.FlyWheelControl.setGoal(new KineticState(0, turret.flyWheelGoal));
+
         telemetry.addData("localizper:", PedroComponent.follower().getPose());
+
+        if((timer.seconds() - timeWhenShot) > 5.0){
+            gate.setPosition(0.5);
+        }
     }
 
     public static Limelight3A limelight = null;
@@ -121,4 +130,11 @@ public class TeleOpBlueMK2 extends NextFTCOpMode {
         FlyWheel.INSTANCE.off.schedule();
         return null;
     }
+    double timeWhenShot;
+    Runnable shootTimer(){
+        gate.setPosition(1);
+        timeWhenShot = timer.seconds();
+        return null;
+    }
+
 }
