@@ -40,12 +40,15 @@ public class FlyWheelRegressionCode extends NextFTCOpMode {
     @Override
     public void onStartButtonPressed() {
         FlyWheel.INSTANCE.isStarted = true;
+        turret.opModeIsStarted = true;
+
     }
 
     @Override
     public void onUpdate() {
 
         turret.relocalizationUpdate(limelight, telemetry);
+        turret.turretMovement(false);
 
         if(gamepad1.y){
             FlyWheel.INSTANCE.FlyWheelControl.setGoal(new KineticState(0, FlyWheel.INSTANCE.FlyWheelControl.getGoal().getVelocity()+100));

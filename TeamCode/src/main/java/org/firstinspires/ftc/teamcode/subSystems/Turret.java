@@ -52,7 +52,7 @@ public class Turret implements Subsystem {
     double yOffsetBlue = 0;
     double xOffsetRed = 0;
     double yOffsetRed = 0;
-    Pose targetPoseBlue = new Pose(3, 140);
+    Pose targetPoseBlue = new Pose(5, 142);
     Pose targetPoseRed = new Pose(140, 140);
     public double distanceOffsetBlue = 0;
     public double distanceOffsetRed = 0;
@@ -61,7 +61,7 @@ public class Turret implements Subsystem {
 
 
     public ControlSystem turretControl = ControlSystem.builder()
-            .posPid(0.0065, 0.0, 0.000008)
+            .posPid(0.01, 0.0, 0)
             .elevatorFF(0)
             .build();
 
@@ -147,9 +147,15 @@ public class Turret implements Subsystem {
                     } else if (distanceOffsetBlue > 70 && distanceOffsetBlue < 90) {
                         hood.setPosition(.65);
                         flyWheelGoal = 6.77966 * distanceOffsetBlue +820.20339;
-                    } else if (distanceOffsetBlue > 90) {
+                    } else if (distanceOffsetBlue > 90 && distanceOffsetBlue < 100) {
+                        hood.setPosition(.85);
+                        flyWheelGoal = 4.56621 * distanceOffsetBlue + 1038.12785;
+                    } else if (distanceOffsetBlue > 100 && distanceOffsetBlue < 119) {
                         hood.setPosition(.9);
-                        flyWheelGoal = 3.10128 * distanceOffsetBlue + 1362.21009; // old value: 1262.21009
+                        flyWheelGoal = 6.66667 * distanceOffsetBlue + 816.66667;
+                    } else if (distanceOffsetBlue > 119) {
+                        hood.setPosition(1);
+                        flyWheelGoal = 6.06347 * distanceOffsetBlue + 858.51434;
                     }
 
                     telemetry.addData("Function y: ", flyWheelGoal);
@@ -186,9 +192,15 @@ public class Turret implements Subsystem {
                     } else if (distanceOffsetRed > 70 && distanceOffsetRed < 90) {
                         hood.setPosition(.65);
                         flyWheelGoal = 6.77966 * distanceOffsetRed +820.20339;
-                    } else if (distanceOffsetRed > 90) {
+                    }  else if (distanceOffsetRed > 90 && distanceOffsetRed < 100) {
+                        hood.setPosition(.85);
+                        flyWheelGoal = 4.56621 * distanceOffsetRed + 1038.12785;
+                    } else if (distanceOffsetRed > 100 && distanceOffsetRed < 119) {
                         hood.setPosition(.9);
-                        flyWheelGoal = 3.10128 * distanceOffsetRed + 1262.21009;
+                        flyWheelGoal = 6.66667 * distanceOffsetRed + 816.66667;
+                    } else if (distanceOffsetRed > 119) {
+                        hood.setPosition(1);
+                        flyWheelGoal = 6.06347 * distanceOffsetRed + 858.51434;
                     }
 
                     telemetry.addData("Function y: ", flyWheelGoal);
