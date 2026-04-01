@@ -94,14 +94,14 @@ public class TeleOpRedMK2 extends NextFTCOpMode {
         telemetry.update();
 
         turret.relocalizationUpdate(limelight, telemetry);
-        turret.autoFlyWheelRegressionRed(limelight, telemetry);
+        turret.autoFlyWheelRegressionRed(telemetry);
         turret.turretMovement(true);
 
         FlyWheel.INSTANCE.FlyWheelControl.setGoal(new KineticState(0, turret.flyWheelGoal));
 
         telemetry.addData("localizper:", PedroComponent.follower().getPose());
 
-        if((timer.seconds() - timeWhenShot) > 5.0){
+        if((timer.seconds() - timeWhenShot) > 3.0){
             gate.setPosition(0.5);
         }
     }

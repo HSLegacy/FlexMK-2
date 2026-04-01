@@ -52,8 +52,8 @@ public class Turret implements Subsystem {
     double yOffsetBlue = 0;
     double xOffsetRed = 0;
     double yOffsetRed = 0;
-    Pose targetPoseBlue = new Pose(5, 142);
-    Pose targetPoseRed = new Pose(140, 140);
+    public Pose targetPoseBlue = new Pose(5, 142);
+    public Pose targetPoseRed = new Pose(140, 140);
     public double distanceOffsetBlue = 0;
     public double distanceOffsetRed = 0;
     public static boolean isStarted = false;
@@ -119,95 +119,69 @@ public class Turret implements Subsystem {
 
     private Pose botCameraPose;
 
-    public void autoFlyWheelRegressionBlue(Limelight3A limelight, Telemetry telemetry) {
+    public void autoFlyWheelRegressionBlue(Telemetry telemetry) {
 
-        LLResult result = limelight.getLatestResult();
-
-        if (result != null) {
-
-            if (result.isValid()) {
-                List<LLResultTypes.FiducialResult> feducialResults = result.getFiducialResults();
-                LLResultTypes.FiducialResult lastResult = feducialResults.get(0);
-
-                if (lastResult != null) {
-
-                    //Close launch zone regression
-                    if (distanceOffsetBlue < 28) {
-                        hood.setPosition(0);
-                        flyWheelGoal = 5.457 * distanceOffsetBlue + 948.3328;
-                    } else if (distanceOffsetBlue > 28 && distanceOffsetBlue < 46) {
-                        hood.setPosition(.2);
-                        flyWheelGoal = 6.60764 * distanceOffsetBlue + 863.9963;
-                    } else if (distanceOffsetBlue > 46 && distanceOffsetBlue < 58) {
-                        hood.setPosition(.4);
-                        flyWheelGoal = 5.04371 * distanceOffsetBlue + 907.03093;
-                    } else if (distanceOffsetBlue > 58 && distanceOffsetBlue < 70) {
-                        hood.setPosition(.5);
-                        flyWheelGoal = 8.54336 * distanceOffsetBlue + 703.40026;
-                    } else if (distanceOffsetBlue > 70 && distanceOffsetBlue < 90) {
-                        hood.setPosition(.65);
-                        flyWheelGoal = 6.77966 * distanceOffsetBlue +820.20339;
-                    } else if (distanceOffsetBlue > 90 && distanceOffsetBlue < 100) {
-                        hood.setPosition(.85);
-                        flyWheelGoal = 4.56621 * distanceOffsetBlue + 1038.12785;
-                    } else if (distanceOffsetBlue > 100 && distanceOffsetBlue < 119) {
-                        hood.setPosition(.9);
-                        flyWheelGoal = 6.66667 * distanceOffsetBlue + 816.66667;
-                    } else if (distanceOffsetBlue > 119) {
-                        hood.setPosition(1);
-                        flyWheelGoal = 6.06347 * distanceOffsetBlue + 858.51434;
-                    }
-
-                    telemetry.addData("Function y: ", flyWheelGoal);
-                }
+            //Close launch zone regression
+            if (distanceOffsetBlue < 28) {
+                hood.setPosition(0);
+                flyWheelGoal = 5.457 * distanceOffsetBlue + 948.3328;
+            } else if (distanceOffsetBlue > 28 && distanceOffsetBlue < 46) {
+                hood.setPosition(.2);
+                flyWheelGoal = 6.60764 * distanceOffsetBlue + 863.9963;
+            } else if (distanceOffsetBlue > 46 && distanceOffsetBlue < 58) {
+                hood.setPosition(.4);
+                flyWheelGoal = 5.04371 * distanceOffsetBlue + 907.03093;
+            } else if (distanceOffsetBlue > 58 && distanceOffsetBlue < 70) {
+                hood.setPosition(.5);
+                flyWheelGoal = 8.54336 * distanceOffsetBlue + 703.40026;
+            } else if (distanceOffsetBlue > 70 && distanceOffsetBlue < 90) {
+                hood.setPosition(.65);
+                flyWheelGoal = 6.77966 * distanceOffsetBlue +820.20339;
+            } else if (distanceOffsetBlue > 90 && distanceOffsetBlue < 100) {
+                hood.setPosition(.85);
+                flyWheelGoal = 4.56621 * distanceOffsetBlue + 1038.12785;
+            } else if (distanceOffsetBlue > 100 && distanceOffsetBlue < 119) {
+                hood.setPosition(.9);
+                flyWheelGoal = 6.66667 * distanceOffsetBlue + 816.66667;
+            } else if (distanceOffsetBlue > 119) {
+                hood.setPosition(1);
+                flyWheelGoal = 6.06347 * distanceOffsetBlue + 858.51434;
             }
-        }
+
+            telemetry.addData("Function y: ", flyWheelGoal);
     }
 
-    public void autoFlyWheelRegressionRed(Limelight3A limelight, Telemetry telemetry) {
+    public void autoFlyWheelRegressionRed(Telemetry telemetry) {
 
-        LLResult result = limelight.getLatestResult();
-
-        if (result != null) {
-
-            if (result.isValid()) {
-                List<LLResultTypes.FiducialResult> feducialResults = result.getFiducialResults();
-                LLResultTypes.FiducialResult lastResult = feducialResults.get(0);
-
-                if (lastResult != null) {
-
-                    //Close launch zone regression
-                    if (distanceOffsetRed < 28) {
-                        hood.setPosition(0);
-                        flyWheelGoal = 5.457 * distanceOffsetRed + 948.3328;
-                    } else if (distanceOffsetRed > 28 && distanceOffsetRed < 46) {
-                        hood.setPosition(.2);
-                        flyWheelGoal = 6.60764 * distanceOffsetRed + 863.9963;
-                    } else if (distanceOffsetRed > 46 && distanceOffsetRed < 58) {
-                        hood.setPosition(.4);
-                        flyWheelGoal = 5.04371 * distanceOffsetRed + 907.03093;
-                    } else if (distanceOffsetRed > 58 && distanceOffsetRed < 70) {
-                        hood.setPosition(.5);
-                        flyWheelGoal = 8.54336 * distanceOffsetRed + 703.40026;
-                    } else if (distanceOffsetRed > 70 && distanceOffsetRed < 90) {
-                        hood.setPosition(.65);
-                        flyWheelGoal = 6.77966 * distanceOffsetRed +820.20339;
-                    }  else if (distanceOffsetRed > 90 && distanceOffsetRed < 100) {
-                        hood.setPosition(.85);
-                        flyWheelGoal = 4.56621 * distanceOffsetRed + 1038.12785;
-                    } else if (distanceOffsetRed > 100 && distanceOffsetRed < 119) {
-                        hood.setPosition(.9);
-                        flyWheelGoal = 6.66667 * distanceOffsetRed + 816.66667;
-                    } else if (distanceOffsetRed > 119) {
-                        hood.setPosition(1);
-                        flyWheelGoal = 6.06347 * distanceOffsetRed + 858.51434;
-                    }
-
-                    telemetry.addData("Function y: ", flyWheelGoal);
-                }
+            //Close launch zone regression
+            if (distanceOffsetRed < 28) {
+                hood.setPosition(0);
+                flyWheelGoal = 5.457 * distanceOffsetRed + 948.3328;
+            } else if (distanceOffsetRed > 28 && distanceOffsetRed < 46) {
+                hood.setPosition(.2);
+                flyWheelGoal = 6.60764 * distanceOffsetRed + 863.9963;
+            } else if (distanceOffsetRed > 46 && distanceOffsetRed < 58) {
+                hood.setPosition(.4);
+                flyWheelGoal = 5.04371 * distanceOffsetRed + 907.03093;
+            } else if (distanceOffsetRed > 58 && distanceOffsetRed < 70) {
+                hood.setPosition(.5);
+                flyWheelGoal = 8.54336 * distanceOffsetRed + 703.40026;
+            } else if (distanceOffsetRed > 70 && distanceOffsetRed < 90) {
+                hood.setPosition(.65);
+                flyWheelGoal = 6.77966 * distanceOffsetRed +820.20339;
+            }  else if (distanceOffsetRed > 90 && distanceOffsetRed < 100) {
+                hood.setPosition(.85);
+                flyWheelGoal = 4.56621 * distanceOffsetRed + 1038.12785;
+            } else if (distanceOffsetRed > 100 && distanceOffsetRed < 119) {
+                hood.setPosition(.9);
+                flyWheelGoal = 6.66667 * distanceOffsetRed + 816.66667;
+            } else if (distanceOffsetRed > 119) {
+                hood.setPosition(1);
+                flyWheelGoal = 6.06347 * distanceOffsetRed + 858.51434;
             }
+
+            telemetry.addData("Function y: ", flyWheelGoal);
         }
-    }
 
     public void relocalizationUpdate(Limelight3A limelight, Telemetry telemetry){
         LLResult result = limelight.getLatestResult();
