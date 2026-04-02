@@ -53,7 +53,7 @@ public class Turret implements Subsystem {
     double xOffsetRed = 0;
     double yOffsetRed = 0;
     public Pose targetPoseBlue = new Pose(5, 142);
-    public Pose targetPoseRed = new Pose(140, 140);
+    public Pose targetPoseRed = new Pose(142, 138);
     public double distanceOffsetBlue = 0;
     public double distanceOffsetRed = 0;
     public static boolean isStarted = false;
@@ -213,7 +213,6 @@ public class Turret implements Subsystem {
 
     @Override
     public void initialize () {
-        turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         opModeIsStarted = false;
     }
 

@@ -96,6 +96,7 @@ public class TeleOpBlueMK2 extends NextFTCOpMode {
         turret.relocalizationUpdate(limelight, telemetry);
         turret.autoFlyWheelRegressionBlue(telemetry);
         turret.turretMovement(false);
+        turret.targetPoseBlue = new Pose(2, 139);
 
         FlyWheel.INSTANCE.FlyWheelControl.setGoal(new KineticState(0, turret.flyWheelGoal));
 
