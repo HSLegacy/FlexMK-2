@@ -27,22 +27,15 @@ public class Turret implements Subsystem {
 
     private static Turret single_instance = null;
 
-    private static Limelight3A limelight;
+    public Limelight3A limelight;
 
-    private static Telemetry telemetry;
+    public Telemetry telemetry;
     public boolean relocalizeToggle;
+    public static final Turret INSTANCE = new Turret();
 
     private Turret() {}
 
-    public static synchronized Turret getInstance(Limelight3A l, Telemetry tel)
-    {
-        if (single_instance == null)
-            single_instance = new Turret();
 
-        limelight = l;
-        telemetry = tel;
-        return single_instance;
-    }
 
     public MotorEx turretMotor = new MotorEx("turret");
     public ServoEx hood = new ServoEx("hood");

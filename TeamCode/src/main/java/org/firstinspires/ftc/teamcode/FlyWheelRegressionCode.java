@@ -26,29 +26,28 @@ public class FlyWheelRegressionCode extends NextFTCOpMode {
 
     private static Limelight3A limelight;
 
-    Turret turret = Turret.getInstance(limelight, telemetry);
 
 
     public FlyWheelRegressionCode() {
         addComponents(
                 new PedroComponent(Constants::createFollower),
                 new SubsystemComponent(FlyWheel.INSTANCE),
-                new SubsystemComponent(turret)
+                new SubsystemComponent(Turret.INSTANCE)
         );
     }
 
     @Override
     public void onStartButtonPressed() {
         FlyWheel.INSTANCE.isStarted = true;
-        turret.opModeIsStarted = true;
+        Turret.INSTANCE.opModeIsStarted = true;
 
     }
 
     @Override
     public void onUpdate() {
 
-        turret.relocalizationUpdate(limelight, telemetry);
-        turret.turretMovement(false);
+        Turret.INSTANCE.relocalizationUpdate(limelight, telemetry);
+        Turret.INSTANCE.turretMovement(false);
 
         if(gamepad1.y){
             FlyWheel.INSTANCE.FlyWheelControl.setGoal(new KineticState(0, FlyWheel.INSTANCE.FlyWheelControl.getGoal().getVelocity()+100));
@@ -71,7 +70,7 @@ public class FlyWheelRegressionCode extends NextFTCOpMode {
         }
 
         if(gamepad1.right_bumper){
-            turret.resetButton();
+            Turret.INSTANCE.resetButton();
         }
 
         if(gamepad1.left_bumper){
@@ -82,7 +81,7 @@ public class FlyWheelRegressionCode extends NextFTCOpMode {
             uptake.setPower(0);
         }
 
-        telemetry.addData("Distance from goal: ", turret.distanceOffsetBlue);
+        telemetry.addData("Distance from goal: ", Turret.INSTANCE.distanceOffsetBlue);
         telemetry.addData("Hood Position: ", hood.getPosition());
         telemetry.addData("leftFlyWheel Speed: ", FlyWheel.INSTANCE.topFW.getVelocity());
         telemetry.addData("rightFlyWheel Speed: ", FlyWheel.INSTANCE.bottomFW.getVelocity());

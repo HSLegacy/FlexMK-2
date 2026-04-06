@@ -48,13 +48,13 @@ public class TestTeleop extends NextFTCOpMode {
     );
     public static Limelight3A limelight = null;
 
-    Turret turret = Turret.getInstance(limelight, telemetry);
+
     public TestTeleop() {
         addComponents(
                 new PedroComponent(Constants::createFollower),
                 BulkReadComponent.INSTANCE,
                 BindingsComponent.INSTANCE,
-                new SubsystemComponent(turret)
+                new SubsystemComponent(Turret.INSTANCE)
         );
     }
 
@@ -69,7 +69,8 @@ public class TestTeleop extends NextFTCOpMode {
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
-
+        Turret.INSTANCE.limelight = limelight;
+        Turret.INSTANCE.telemetry = telemetry;
         //PedroComponent.follower().setStartingPose(new Pose(72,72, Math.toRadians(90)));
 
     }
@@ -79,7 +80,7 @@ public class TestTeleop extends NextFTCOpMode {
         turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         PedroComponent.follower().setPose(new Pose(0,0,0));
             driverControlled.schedule();
-        turret.opModeIsStarted = true;
+        Turret.INSTANCE.opModeIsStarted = true;
     }
 
     private Pose getRobotPoseFromCamera(Pose2D pose, DistanceUnit d) {
@@ -113,10 +114,10 @@ public class TestTeleop extends NextFTCOpMode {
             resetButton();
         }
         if (gamepad1.b){
-            turret.turretControl.setGoal(new KineticState(-300));
+            Turret.INSTANCE.turretControl.setGoal(new KineticState(-300));
         }
         else if(gamepad1.y){
-            turret.turretControl.setGoal(new KineticState(0));
+            Turret.INSTANCE.turretControl.setGoal(new KineticState(0));
         }
 
         LLResult result = limelight.getLatestResult();

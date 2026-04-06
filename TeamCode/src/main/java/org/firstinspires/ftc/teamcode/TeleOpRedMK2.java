@@ -45,12 +45,11 @@ public class TeleOpRedMK2 extends NextFTCOpMode {
             false
     );
 
-    Turret turret = Turret.getInstance(limelight, telemetry);
     public TeleOpRedMK2() {
         addComponents(
                 new PedroComponent(Constants::createFollower),
                 new SubsystemComponent(FlyWheel.INSTANCE),
-                new SubsystemComponent(turret),
+                new SubsystemComponent(Turret.INSTANCE),
                 BulkReadComponent.INSTANCE,
                 BindingsComponent.INSTANCE
         );
@@ -62,11 +61,11 @@ public class TeleOpRedMK2 extends NextFTCOpMode {
         gate.setPosition(0.5);
         FlyWheel.INSTANCE.isStarted = true;
         driverControlled.schedule();
-        turret.opModeIsStarted = true;
+        Turret.INSTANCE.opModeIsStarted = true;
 
         timer = new ElapsedTime();
 
-        relocalize.whenBecomesTrue(() -> turret.resetButton());
+        relocalize.whenBecomesTrue(() -> Turret.INSTANCE.resetButton());
         resetHeading.whenBecomesTrue(() -> PedroComponent.follower().setPose(new Pose(0, 0, Math.toRadians(0))));
         button(() -> gamepad1.a)
                 .whenBecomesTrue(() -> shootTimer());
@@ -93,11 +92,11 @@ public class TeleOpRedMK2 extends NextFTCOpMode {
         BindingManager.update();
         telemetry.update();
 
-        turret.relocalizationUpdate(limelight, telemetry);
-        turret.autoFlyWheelRegressionRed(telemetry);
-        turret.turretMovement(true);
+        Turret.INSTANCE.relocalizationUpdate(limelight, telemetry);
+        Turret.INSTANCE.autoFlyWheelRegressionRed(telemetry);
+        Turret.INSTANCE.turretMovement(true);
 
-        FlyWheel.INSTANCE.FlyWheelControl.setGoal(new KineticState(0, turret.flyWheelGoal));
+        FlyWheel.INSTANCE.FlyWheelControl.setGoal(new KineticState(0, Turret.INSTANCE.flyWheelGoal));
 
         telemetry.addData("localizper:", PedroComponent.follower().getPose());
 
@@ -114,6 +113,9 @@ public class TeleOpRedMK2 extends NextFTCOpMode {
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
+
+        Turret.INSTANCE.limelight = limelight;
+        Turret.INSTANCE.telemetry = telemetry;
     }
 
     @Override

@@ -44,7 +44,6 @@ public class farBlue extends NextFTCOpMode {
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
 
-    Turret turret = Turret.getInstance(limelight, telemetry);
 
 
     private final Pose startPose = new Pose(57, 5, Math.toRadians(180));
@@ -111,20 +110,20 @@ public class farBlue extends NextFTCOpMode {
             });
     public Command relocalize = new LambdaCommand()
             .setStart(() -> {
-                turret.resetButton();
+                Turret.INSTANCE.resetButton();
             });
     public Command setNewTurretPose = new LambdaCommand()
             .setStart(() -> {
-                turret.targetPoseBlue = new Pose(2, 139);
+                Turret.INSTANCE.targetPoseBlue = new Pose(2, 139);
             });
     public Command setOldTurretPose = new LambdaCommand()
             .setStart(() -> {
-                turret.targetPoseBlue = new Pose(5, 142);
+                Turret.INSTANCE.targetPoseBlue = new Pose(5, 142);
             });
 
     public farBlue() {
         addComponents(
-                new SubsystemComponent(turret),
+                new SubsystemComponent(Turret.INSTANCE),
                 new SubsystemComponent(FlyWheel.INSTANCE),
                 new PedroComponent(Constants::createFollower),
                 BulkReadComponent.INSTANCE
@@ -144,7 +143,11 @@ public class farBlue extends NextFTCOpMode {
         FlyWheel.INSTANCE.off.schedule();
         buildPaths();
         follower().setStartingPose(startPose);
-        turret.turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Turret.INSTANCE.turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        Turret.INSTANCE.limelight = limelight;
+        Turret.INSTANCE.telemetry = telemetry;
+
     }
 
     private Command autonomousRoutine() {
@@ -195,18 +198,18 @@ public class farBlue extends NextFTCOpMode {
     public void onStartButtonPressed() {
         autonomousRoutine().schedule();
         FlyWheel.INSTANCE.isStarted = true;
-        turret.opModeIsStarted = true;
+        Turret.INSTANCE.opModeIsStarted = true;
     }
 
     @Override
     public void onUpdate() {
-        FlyWheel.INSTANCE.setGoal(turret.flyWheelGoal);
+        FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
 
-        turret.relocalizationUpdate(limelight, telemetry);
-        turret.autoFlyWheelRegressionBlue(telemetry);
-        turret.turretMovement(false);
+        Turret.INSTANCE.relocalizationUpdate(limelight, telemetry);
+        Turret.INSTANCE.autoFlyWheelRegressionBlue(telemetry);
+        Turret.INSTANCE.turretMovement(false);
 
-        telemetry.addData("Flywheel Goal", turret.flyWheelGoal);
+        telemetry.addData("Flywheel Goal", Turret.INSTANCE.flyWheelGoal);
         telemetry.update();
     }
 
