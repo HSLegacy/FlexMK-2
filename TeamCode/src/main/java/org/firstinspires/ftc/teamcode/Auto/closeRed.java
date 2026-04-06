@@ -5,7 +5,6 @@ import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
 
 import static java.lang.Math.abs;
 
-import dev.nextftc.control.KineticState;
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.delays.Delay;
 import dev.nextftc.core.commands.groups.SequentialGroup;
@@ -34,9 +33,9 @@ import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
 import java.util.Timer;
 
-@Autonomous(name = "closeBlue")
+@Autonomous(name = "closeRed")
 
-public class closeBlue extends NextFTCOpMode {
+public class closeRed extends NextFTCOpMode {
     MotorEx intake = new MotorEx("intake");
     CRServoEx uptake = new CRServoEx("uptake");
     ServoEx gate = new ServoEx("door");
@@ -46,17 +45,28 @@ public class closeBlue extends NextFTCOpMode {
     private int pathState;
 
 
-    private final Pose startPose = new Pose(15, 122, Math.toRadians(180));
-    private final Pose launchPose = new Pose(53, 92, Math.toRadians(180));
-    private final Pose launchPose2 = new Pose(55, 113, Math.toRadians(180));
-    private final Pose goToSpike2 = new Pose(62, 65, Math.toRadians(180));
-    private final Pose spike2Spot1 = new Pose(56, 60, Math.toRadians(180));
-    private final Pose spike2Spot2 = new Pose(8, 59, Math.toRadians(180));
-    private final Pose spike1Pose = new Pose(18, 87, Math.toRadians(180));
-    private final Pose midpoint = new Pose(47, 50, Math.toRadians(180));
-    private final Pose takeFromGatePose = new Pose(17,71, Math.toRadians(180));
-    private final Pose pickUp = new Pose(11, 61, Math.toRadians(142));
-    private final Pose midpoint2 = new Pose(21, 67, Math.toRadians(160));
+    private final Pose startPose = new Pose(15, 122, Math.toRadians(180))
+            .mirror();
+    private final Pose launchPose = new Pose(53, 92, Math.toRadians(180))
+            .mirror();
+    private final Pose launchPose2 = new Pose(55, 113, Math.toRadians(180))
+            .mirror();
+    private final Pose goToSpike2 = new Pose(62, 65, Math.toRadians(180))
+            .mirror();
+    private final Pose spike2Spot1 = new Pose(56, 60, Math.toRadians(180))
+            .mirror();
+    private final Pose spike2Spot2 = new Pose(9, 60, Math.toRadians(180))
+            .mirror();
+    private final Pose spike1Pose = new Pose(18, 87, Math.toRadians(180))
+            .mirror();
+    private final Pose midpoint = new Pose(47, 50, Math.toRadians(180))
+            .mirror();
+    private final Pose takeFromGatePose = new Pose(16.5,71, Math.toRadians(180))
+            .mirror();
+    private final Pose pickUp = new Pose(10, 61, Math.toRadians(142))
+            .mirror();
+    private final Pose midpoint2 = new Pose(21, 67, Math.toRadians(160))
+            .mirror();
 
 
     public PathChain launchPath, spike2, launchPath2, takeFromGatePath, pickUpPath, launchPath3, takeFromGatePath2, pickUpPath2, launchPath4, spike1Path, launchPath5;
@@ -132,13 +142,13 @@ public class closeBlue extends NextFTCOpMode {
             });
     public Command setNewTurretPose = new LambdaCommand()
             .setStart(() -> {
-                Turret.INSTANCE.targetPoseBlue = new Pose(2, 139);
+                Turret.INSTANCE.targetPoseRed = new Pose(139, 139);
             });
     public Command setOldTurretPose = new LambdaCommand()
             .setStart(() -> {
-                Turret.INSTANCE.targetPoseBlue = new Pose(3, 144);
+                Turret.INSTANCE.targetPoseRed = new Pose(142, 138);
             });
-    public closeBlue() {
+    public closeRed() {
         addComponents(
                 new SubsystemComponent(Turret.INSTANCE),
                 new SubsystemComponent(FlyWheel.INSTANCE),
@@ -214,8 +224,8 @@ public class closeBlue extends NextFTCOpMode {
         FlyWheel.INSTANCE.setGoal(Turret.INSTANCE.flyWheelGoal);
 
         Turret.INSTANCE.relocalizationUpdate(limelight, telemetry);
-        Turret.INSTANCE.autoFlyWheelRegressionBlue(telemetry);
-        Turret.INSTANCE.turretMovement(false);
+        Turret.INSTANCE.autoFlyWheelRegressionRed(telemetry);
+        Turret.INSTANCE.turretMovement(true);
 
         telemetry.addData("Flywheel Goal", Turret.INSTANCE.flyWheelGoal);
         telemetry.update();
