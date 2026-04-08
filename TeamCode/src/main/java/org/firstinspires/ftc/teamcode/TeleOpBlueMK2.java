@@ -38,6 +38,8 @@ public class TeleOpBlueMK2 extends NextFTCOpMode {
 
     Button relocalize = button(() -> gamepad1.x);
     Button resetHeading = button(() -> gamepad1.y);
+    Button resetTurretEncoders = button(() -> gamepad1.b);
+
     DriverControlledCommand driverControlled = new PedroDriverControlled(
             Gamepads.gamepad1().leftStickY(),
             Gamepads.gamepad1().leftStickX(),
@@ -65,6 +67,7 @@ public class TeleOpBlueMK2 extends NextFTCOpMode {
 
         timer = new ElapsedTime();
 
+        resetTurretEncoders.whenBecomesTrue(() -> Turret.INSTANCE.turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER));
         relocalize.whenBecomesTrue(() -> Turret.INSTANCE.resetButton());
         resetHeading.whenBecomesTrue(() -> PedroComponent.follower().setPose(new Pose(0, 0, Math.toRadians(180))));
         button(() -> gamepad1.a)

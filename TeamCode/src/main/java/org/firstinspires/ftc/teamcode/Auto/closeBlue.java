@@ -46,20 +46,21 @@ public class closeBlue extends NextFTCOpMode {
     private int pathState;
 
 
-    private final Pose startPose = new Pose(15, 122, Math.toRadians(180));
+    private final Pose startPose = new Pose(20, 122, Math.toRadians(180));
     private final Pose launchPose = new Pose(53, 92, Math.toRadians(180));
     private final Pose launchPose2 = new Pose(55, 113, Math.toRadians(180));
+    private final Pose launchPose3 = new Pose(25, 110, Math.toRadians(180));
     private final Pose goToSpike2 = new Pose(62, 65, Math.toRadians(180));
     private final Pose spike2Spot1 = new Pose(56, 60, Math.toRadians(180));
-    private final Pose spike2Spot2 = new Pose(8, 59, Math.toRadians(180));
-    private final Pose spike1Pose = new Pose(18, 87, Math.toRadians(180));
-    private final Pose midpoint = new Pose(47, 50, Math.toRadians(180));
-    private final Pose takeFromGatePose = new Pose(17,71, Math.toRadians(180));
-    private final Pose pickUp = new Pose(11, 61, Math.toRadians(142));
+    private final Pose spike2Spot2 = new Pose(5, 58, Math.toRadians(180));
+    private final Pose spike1Pose = new Pose(17.5, 86, Math.toRadians(180));
+    private final Pose midpoint = new Pose(47.5, 49, Math.toRadians(180));
+    private final Pose takeFromGatePose = new Pose(16.5,68, Math.toRadians(180));
+    private final Pose pickUp = new Pose(9, 60, Math.toRadians(142));
     private final Pose midpoint2 = new Pose(21, 67, Math.toRadians(160));
 
 
-    public PathChain launchPath, spike2, launchPath2, takeFromGatePath, pickUpPath, launchPath3, takeFromGatePath2, pickUpPath2, launchPath4, spike1Path, launchPath5;
+    public PathChain launchPath, spike2, launchPath2, takeFromGatePath, pickUpPath, launchPath3, takeFromGatePath2, pickUpPath2, launchPath4, spike1Path, launchPath5, launchPath6;
 
     public void buildPaths() {
         launchPath = follower().pathBuilder()
@@ -73,7 +74,6 @@ public class closeBlue extends NextFTCOpMode {
         launchPath2 = follower().pathBuilder()
                 .addPath(new BezierCurve(spike2Spot2, midpoint, launchPose))
                 .setLinearHeadingInterpolation(spike2Spot2.getHeading(), launchPose.getHeading())
-                .addParametricCallback(.95, openGate)
                 .build();
         takeFromGatePath = follower().pathBuilder()
                 .addPath(new BezierCurve(launchPose, midpoint, takeFromGatePose))
@@ -86,7 +86,6 @@ public class closeBlue extends NextFTCOpMode {
         launchPath3 = follower().pathBuilder()
                 .addPath(new BezierCurve(pickUp, midpoint, launchPose))
                 .setLinearHeadingInterpolation(pickUp.getHeading(), launchPose.getHeading())
-                .addParametricCallback(.95, openGate)
                 .build();
         takeFromGatePath2 = follower().pathBuilder()
                 .addPath(new BezierCurve(launchPose, midpoint, takeFromGatePose))
@@ -99,7 +98,6 @@ public class closeBlue extends NextFTCOpMode {
         launchPath4 = follower().pathBuilder()
                 .addPath(new BezierCurve(pickUp, midpoint,launchPose))
                 .setLinearHeadingInterpolation(pickUp.getHeading(), launchPose.getHeading())
-                .addParametricCallback(.95, openGate)
                 .build();
         spike1Path = follower().pathBuilder()
                 .addPath(new BezierCurve(launchPose, spike1Pose))
@@ -108,7 +106,10 @@ public class closeBlue extends NextFTCOpMode {
         launchPath5 = follower().pathBuilder()
                 .addPath(new BezierLine(spike1Pose, launchPose2))
                 .setLinearHeadingInterpolation(spike1Pose.getHeading(), launchPose2.getHeading())
-                .addParametricCallback(.95, openGate)
+                .build();
+        launchPath6 = follower().pathBuilder()
+                .addPath(new BezierLine(startPose, launchPose3))
+                .setLinearHeadingInterpolation(startPose.getHeading(), launchPose3.getHeading())
                 .build();
     }
 
@@ -132,11 +133,11 @@ public class closeBlue extends NextFTCOpMode {
             });
     public Command setNewTurretPose = new LambdaCommand()
             .setStart(() -> {
-                Turret.INSTANCE.targetPoseBlue = new Pose(2, 139);
+                Turret.INSTANCE.targetPoseBlue = new Pose(2, 142);
             });
     public Command setOldTurretPose = new LambdaCommand()
             .setStart(() -> {
-                Turret.INSTANCE.targetPoseBlue = new Pose(3, 144);
+                Turret.INSTANCE.targetPoseBlue = new Pose(4, 144);
             });
     public closeBlue() {
         addComponents(
@@ -168,23 +169,23 @@ public class closeBlue extends NextFTCOpMode {
     private Command autonomousRoutine() {
         return new SequentialGroup(
                 setNewTurretPose,
-                runIntake,
-                openGate,
-                new Delay(3.5),
                 closeGate,
-                setOldTurretPose,
+                runIntake,
+                new FollowPath(launchPath6),
+                openGate,
+                new Delay(2),
+                closeGate,
                 new FollowPath(spike2),
                 new FollowPath(launchPath2), //also opens gate
                 openGate,
-                relocalize,
                 new Delay(2),
                 closeGate,
                 new FollowPath(takeFromGatePath),
                 new FollowPath(pickUpPath),
                 new Delay(1),
                 new FollowPath(launchPath3), //also opens gate
+                setOldTurretPose,
                 openGate,
-                relocalize,
                 new Delay(2),
                 closeGate,
                 new FollowPath(takeFromGatePath2),
@@ -192,7 +193,6 @@ public class closeBlue extends NextFTCOpMode {
                 new Delay(1),
                 new FollowPath(launchPath4),
                 openGate,
-                relocalize,
                 new Delay(2),
                 closeGate,
                 new FollowPath(spike1Path),

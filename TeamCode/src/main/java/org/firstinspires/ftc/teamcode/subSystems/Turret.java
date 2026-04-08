@@ -54,7 +54,7 @@ public class Turret implements Subsystem {
 
 
     public ControlSystem turretControl = ControlSystem.builder()
-            .posPid(0.01, 0.0, 0)
+            .posPid(0.006, 0.0, 0)
             .elevatorFF(0)
             .build();
 
@@ -224,10 +224,12 @@ public class Turret implements Subsystem {
             turretMotor.setPower(turretControl.calculate(turretMotor.getState()));
             telemetry.addData("turret Clicks: ", turretMotor.getCurrentPosition());
 
-            if ((turretControl.getGoal().getPosition() + (degreesToTurnCorrected * degsPerClick) > -652 && (turretControl.getGoal().getPosition() + (degreesToTurnCorrected * degsPerClick) < 652)))
-            {
+            if ((turretControl.getGoal().getPosition() + (degreesToTurnCorrected * degsPerClick) > -652 && (turretControl.getGoal().getPosition() + (degreesToTurnCorrected * degsPerClick) < 652))) {
                 turretControl.setGoal(new KineticState(turretMotor.getCurrentPosition() + (degreesToTurnCorrected * degsPerClick)));
             }
+
+            telemetry.addData("Localizer: ", new Pose(PedroComponent.follower().getPose().getX(), PedroComponent.follower().getPose().getY(), PedroComponent.follower().getPose().getHeading()));
+
 
         }
 
