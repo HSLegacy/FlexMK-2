@@ -4,7 +4,6 @@ import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
 
 import static java.lang.Math.abs;
 
-import dev.nextftc.control.KineticState;
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.delays.Delay;
 import dev.nextftc.core.commands.groups.SequentialGroup;
@@ -47,19 +46,20 @@ public class farBlue extends NextFTCOpMode {
 
 
 
-    private final Pose startPose = new Pose(57, 5, Math.toRadians(180));
-    private final Pose launchPose = new Pose(52, 18, Math.toRadians(180));
-    private final Pose subStationPickUpPose1 = new Pose(15, 15, Math.toRadians(-157));
-    private final Pose subStationPickUpPose2 = new Pose(14, 9, Math.toRadians(-157));
+    private final Pose startPose = new Pose(59, 5, Math.toRadians(180));
+    private final Pose launchPose = new Pose(52, 19, Math.toRadians(85));
+    private final Pose turnPose = new Pose(47, 19, Math.toRadians(180));
+    private final Pose subStationPickUpPose1 = new Pose(17, 15, Math.toRadians(-157));
+    private final Pose subStationPickUpPose2 = new Pose(16, 9, Math.toRadians(-157));
     private final Pose cyclePose = new Pose(19, 11, Math.toRadians(-160));
-    private final Pose cyclePose2 = new Pose(22, 11, Math.toRadians(180));
+    private final Pose cyclePose2 = new Pose(24, 11, Math.toRadians(180));
     private final Pose cyclePose3 = new Pose(16.5, 11, Math.toRadians(180));
-    private final Pose parkPose = new Pose(43,17, Math.toRadians(180));
+    private final Pose parkPose = new Pose(39,17, Math.toRadians(180));
 
     private final Pose spike3spot1 = new Pose(35, 35, Math.toRadians(180));
     private final Pose spike3spot2 = new Pose(15, 35, Math.toRadians(180));
 
-    public PathChain launchPath, parkPath, sub1Path, sub2Path, spike31, spike32, launchPath2, cyclePath, launchPath3, cyclePath2, cyclePath3;
+    public PathChain launchPath, parkPath, sub1Path, sub2Path, spike31, spike32, launchPath2, cyclePath, launchPath3, cyclePath2, cyclePath3, turnPath;
 
     public void buildPaths() {
         sub1Path = follower().pathBuilder()
@@ -74,9 +74,13 @@ public class farBlue extends NextFTCOpMode {
                 .addPath(new BezierLine(subStationPickUpPose2, launchPose))
                 .setLinearHeadingInterpolation(subStationPickUpPose2.getHeading(), launchPose.getHeading())
                 .build();
+        turnPath = follower().pathBuilder()
+                .addPath(new BezierLine(launchPose, turnPose))
+                .setLinearHeadingInterpolation(launchPose.getHeading(), turnPose.getHeading())
+                .build();
         cyclePath = follower().pathBuilder()
-                .addPath(new BezierLine(launchPose, cyclePose))
-                .setLinearHeadingInterpolation(launchPose.getHeading(), cyclePose.getHeading())
+                .addPath(new BezierLine(turnPose, cyclePose))
+                .setLinearHeadingInterpolation(turnPose.getHeading(), cyclePose.getHeading())
                 .build();
         cyclePath2 = follower().pathBuilder()
                 .addPath(new BezierLine(cyclePose, cyclePose2))
@@ -115,11 +119,15 @@ public class farBlue extends NextFTCOpMode {
             });
     public Command setNewTurretPose = new LambdaCommand()
             .setStart(() -> {
-                Turret.INSTANCE.targetPoseBlue = new Pose(2, 139);
+                Turret.INSTANCE.targetPoseBlue = new Pose(-3, 131);
             });
     public Command setOldTurretPose = new LambdaCommand()
             .setStart(() -> {
-                Turret.INSTANCE.targetPoseBlue = new Pose(5, 142);
+                Turret.INSTANCE.targetPoseBlue = new Pose(17, 141);
+            });
+    public Command setMiddleTurretPose = new LambdaCommand()
+            .setStart(() -> {
+                Turret.INSTANCE.targetPoseBlue = new Pose(20, 141);
             });
 
     public farBlue() {
@@ -150,49 +158,53 @@ public class farBlue extends NextFTCOpMode {
 
         Turret.INSTANCE.limelight = limelight;
         Turret.INSTANCE.telemetry = telemetry;
-        Turret.INSTANCE.limitSwitch = limitSwitch;
-
-
-
     }
 
     private Command autonomousRoutine() {
         return new SequentialGroup(
                 setNewTurretPose,
-                relocalize,
                 runIntake,
                 openGate,
                 new Delay(3),
                 closeGate,
+                setMiddleTurretPose,
                 new FollowPath(sub1Path),
                 new FollowPath(sub2Path),
                 new Delay(.5),
                 new FollowPath(launchPath),
-                relocalize,
+                new Delay(.2),
                 openGate,
                 new Delay(2),
                 closeGate,
+                setOldTurretPose,
+                new FollowPath(turnPath),
                 new FollowPath(cyclePath),
                 new FollowPath(cyclePath2),
                 new FollowPath(cyclePath3),
+                new Delay(.2),
                 new FollowPath(launchPath2),
-                relocalize,
+                new Delay(.2),
                 openGate,
                 new Delay(2),
                 closeGate,
+                setMiddleTurretPose,
+                new FollowPath(turnPath),
                 new FollowPath(cyclePath),
                 new FollowPath(cyclePath2),
                 new FollowPath(cyclePath3),
+                new Delay(.2),
                 new FollowPath(launchPath2),
-                relocalize,
+                new Delay(.2),
                 openGate,
                 new Delay(2),
                 closeGate,
+                new FollowPath(turnPath),
                 new FollowPath(cyclePath),
                 new FollowPath(cyclePath2),
                 new FollowPath(cyclePath3),
+                new Delay(.2),
                 new FollowPath(launchPath2),
-                relocalize,
+                new Delay(.2),
                 openGate,
                 new Delay(2),
                 closeGate,
@@ -217,6 +229,10 @@ public class farBlue extends NextFTCOpMode {
 
         telemetry.addData("Flywheel Goal", Turret.INSTANCE.flyWheelGoal);
         telemetry.update();
+
+        if (!limitSwitch.getState()) {
+            Turret.INSTANCE.turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
     }
 
     public static Limelight3A limelight = null;
