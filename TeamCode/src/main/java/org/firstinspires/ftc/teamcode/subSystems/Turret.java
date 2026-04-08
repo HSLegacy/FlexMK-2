@@ -5,6 +5,7 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
@@ -35,8 +36,6 @@ public class Turret implements Subsystem {
 
     private Turret() {}
 
-
-
     public MotorEx turretMotor = new MotorEx("turret");
     public ServoEx hood = new ServoEx("hood");
 
@@ -46,11 +45,12 @@ public class Turret implements Subsystem {
     double xOffsetRed = 0;
     double yOffsetRed = 0;
     public Pose targetPoseBlue = new Pose(5, 142);
-    public Pose targetPoseRed = new Pose(142, 138);
+    public Pose targetPoseRed = new Pose(138, 139);
     public double distanceOffsetBlue = 0;
     public double distanceOffsetRed = 0;
     public static boolean isStarted = false;
     public boolean lockToggle;
+    public DigitalChannel limitSwitch = null;
 
 
     public ControlSystem turretControl = ControlSystem.builder()
@@ -117,23 +117,25 @@ public class Turret implements Subsystem {
             //Close launch zone regression
             if (distanceOffsetBlue < 28) {
                 hood.setPosition(0);
-                flyWheelGoal = 5.457 * distanceOffsetBlue + 948.3328;
+                flyWheelGoal = 5.457 * distanceOffsetBlue + 968.3328; //948.3328
             } else if (distanceOffsetBlue > 28 && distanceOffsetBlue < 46) {
                 hood.setPosition(.2);
-                flyWheelGoal = 6.60764 * distanceOffsetBlue + 863.9963;
+                flyWheelGoal = 6.60764 * distanceOffsetBlue + 883.9963; //863.9963
             } else if (distanceOffsetBlue > 46 && distanceOffsetBlue < 58) {
                 hood.setPosition(.4);
-                flyWheelGoal = 5.04371 * distanceOffsetBlue + 907.03093;
+                flyWheelGoal = 5.04371 * distanceOffsetBlue + 927.03093; //907.03093
             } else if (distanceOffsetBlue > 58 && distanceOffsetBlue < 70) {
                 hood.setPosition(.5);
-                flyWheelGoal = 8.54336 * distanceOffsetBlue + 703.40026;
+                flyWheelGoal = 8.54336 * distanceOffsetBlue + 723.40026; //703.40026
             } else if (distanceOffsetBlue > 70 && distanceOffsetBlue < 90) {
                 hood.setPosition(.65);
-                flyWheelGoal = 6.77966 * distanceOffsetBlue +820.20339;
+                flyWheelGoal = 6.77966 * distanceOffsetBlue + 840.20339; //820.20339
             } else if (distanceOffsetBlue > 90 && distanceOffsetBlue < 100) {
                 hood.setPosition(.85);
-                flyWheelGoal = 4.56621 * distanceOffsetBlue + 1038.12785;
-            } else if (distanceOffsetBlue > 100 && distanceOffsetBlue < 119) {
+                flyWheelGoal = 4.56621 * distanceOffsetBlue + 1058.12785; //1038.12785
+            }
+
+            else if (distanceOffsetBlue > 100 && distanceOffsetBlue < 119) {
                 hood.setPosition(.9);
                 flyWheelGoal = 6.66667 * distanceOffsetBlue + 816.66667;
             } else if (distanceOffsetBlue > 119) {
@@ -161,7 +163,7 @@ public class Turret implements Subsystem {
                 flyWheelGoal = 8.54336 * distanceOffsetRed + 703.40026;
             } else if (distanceOffsetRed > 70 && distanceOffsetRed < 90) {
                 hood.setPosition(.65);
-                flyWheelGoal = 6.77966 * distanceOffsetRed +820.20339;
+                flyWheelGoal = 6.77966 * distanceOffsetRed + 820.20339;
             }  else if (distanceOffsetRed > 90 && distanceOffsetRed < 100) {
                 hood.setPosition(.85);
                 flyWheelGoal = 4.56621 * distanceOffsetRed + 1038.12785;
@@ -221,6 +223,7 @@ public class Turret implements Subsystem {
         distanceOffsetRed = Math.sqrt(Math.pow(xOffsetRed, 2) + Math.pow(yOffsetRed, 2));
 
         if (opModeIsStarted) {
+
             turretMotor.setPower(turretControl.calculate(turretMotor.getState()));
             telemetry.addData("turret Clicks: ", turretMotor.getCurrentPosition());
 

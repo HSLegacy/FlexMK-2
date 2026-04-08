@@ -39,6 +39,7 @@ public class farBlue extends NextFTCOpMode {
     MotorEx intake = new MotorEx("intake");
     CRServoEx uptake = new CRServoEx("uptake");
     ServoEx gate = new ServoEx("door");
+    DigitalChannel limitSwitch = null;
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
@@ -140,6 +141,8 @@ public class farBlue extends NextFTCOpMode {
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
 
+        limitSwitch = hardwareMap.get(DigitalChannel.class, "limitSwitch");
+
         FlyWheel.INSTANCE.off.schedule();
         buildPaths();
         follower().setStartingPose(startPose);
@@ -147,6 +150,9 @@ public class farBlue extends NextFTCOpMode {
 
         Turret.INSTANCE.limelight = limelight;
         Turret.INSTANCE.telemetry = telemetry;
+        Turret.INSTANCE.limitSwitch = limitSwitch;
+
+
 
     }
 

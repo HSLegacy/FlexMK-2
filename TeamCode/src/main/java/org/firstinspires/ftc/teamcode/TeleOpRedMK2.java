@@ -6,6 +6,7 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -35,6 +36,7 @@ public class TeleOpRedMK2 extends NextFTCOpMode {
     CRServoEx uptake = new CRServoEx("uptake");
     ServoEx gate = new ServoEx("door");
     ServoEx hood = new ServoEx("hood");
+    private DigitalChannel limitSwitch = null;
 
     Button relocalize = button(() -> gamepad1.x);
     Button resetHeading = button(() -> gamepad1.y);
@@ -105,6 +107,10 @@ public class TeleOpRedMK2 extends NextFTCOpMode {
         if((timer.seconds() - timeWhenShot) > 3.0){
             gate.setPosition(0.5);
         }
+
+        if (!limitSwitch.getState()) {
+            Turret.INSTANCE.turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
     }
 
     public static Limelight3A limelight = null;
@@ -115,6 +121,8 @@ public class TeleOpRedMK2 extends NextFTCOpMode {
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
+
+        limitSwitch = hardwareMap.get(DigitalChannel.class, "limitSwitch");
 
         Turret.INSTANCE.limelight = limelight;
         Turret.INSTANCE.telemetry = telemetry;
