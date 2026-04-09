@@ -119,7 +119,7 @@ public class farBlue extends NextFTCOpMode {
             });
     public Command setNewTurretPose = new LambdaCommand()
             .setStart(() -> {
-                Turret.INSTANCE.targetPoseBlue = new Pose(-3, 131);
+                Turret.INSTANCE.targetPoseBlue = new Pose(-1, 131);
             });
     public Command setOldTurretPose = new LambdaCommand()
             .setStart(() -> {
@@ -127,7 +127,7 @@ public class farBlue extends NextFTCOpMode {
             });
     public Command setMiddleTurretPose = new LambdaCommand()
             .setStart(() -> {
-                Turret.INSTANCE.targetPoseBlue = new Pose(20, 141);
+                Turret.INSTANCE.targetPoseBlue = new Pose(18, 141);
             });
 
     public farBlue() {
