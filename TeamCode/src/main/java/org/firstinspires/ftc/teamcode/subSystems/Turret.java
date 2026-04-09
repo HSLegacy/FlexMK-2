@@ -208,6 +208,8 @@ public class Turret implements Subsystem {
 
     @Override
     public void initialize () {
+        targetPoseBlue = new Pose(5, 142);
+        targetPoseRed = new Pose(138, 139);
         opModeIsStarted = false;
     }
 
