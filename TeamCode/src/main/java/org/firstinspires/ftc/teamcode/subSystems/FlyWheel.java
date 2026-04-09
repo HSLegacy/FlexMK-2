@@ -26,13 +26,13 @@ public class FlyWheel implements Subsystem {
     private FlyWheel() {
     }
 
-    public MotorEx leftFlyWheel = new MotorEx("leftFW");
-    public MotorEx rightFlyWheel = new MotorEx("rightFW");
+    public MotorEx topFW = new MotorEx("topFW");
+    public MotorEx bottomFW = new MotorEx("bottomFW");
 
     public double goal = 1100;
     public boolean isStarted = false;
     public ControlSystem FlyWheelControl = ControlSystem.builder()
-            .velPid(.011,0, 0.8) //.011, 0, .8
+            .velPid(.009,0, 0.005)
             .elevatorFF(0.03)
             .build();
 
@@ -49,26 +49,22 @@ public class FlyWheel implements Subsystem {
 
     @Override
     public void initialize() {
-        FlyWheelControl.setGoal(new KineticState(FlyWheel.INSTANCE.leftFlyWheel.getCurrentPosition(), 0));
+        FlyWheelControl.setGoal(new KineticState(FlyWheel.INSTANCE.topFW.getCurrentPosition(), 0));
     }
 
     @Override
     public void periodic() {
 
-        telemetryManager.getTelemetry().addData("left state", leftFlyWheel.getState().toString());
-        telemetryManager.getTelemetry().addData("right state", rightFlyWheel.getState().toString());
+        telemetryManager.getTelemetry().addData("left state", topFW.getState().toString());
+        telemetryManager.getTelemetry().addData("right state", bottomFW.getState().toString());
         telemetryManager.getTelemetry().addData("goal: ",goal);
 
-    /*    FlyWheelControl = ControlSystem.builder()
-                .velPid(FlyWheelConstants.P,FlyWheelConstants.I,FlyWheelConstants.D) //.008 0 0.002
-                .elevatorFF(0.03)
-                .build();
-    */
         telemetryManager.getTelemetry().update();
         manager.update();
+
         if(isStarted) {
-            leftFlyWheel.setPower(FlyWheelControl.calculate(leftFlyWheel.getState()));
-            rightFlyWheel.setPower(FlyWheelControl.calculate(new KineticState(rightFlyWheel.getCurrentPosition(), abs(rightFlyWheel.getVelocity()))));
+            topFW.setPower(FlyWheelControl.calculate(topFW.getState()));
+            bottomFW.setPower(FlyWheelControl.calculate(new KineticState(bottomFW.getCurrentPosition(), abs(bottomFW.getVelocity()))));
         }
     }
 }
