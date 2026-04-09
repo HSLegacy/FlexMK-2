@@ -1,20 +1,8 @@
 package org.firstinspires.ftc.teamcode.Auto;
-
-import static dev.nextftc.extensions.pedro.PedroComponent.follower;
-
-import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.DcMotor;
-
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
 import org.firstinspires.ftc.teamcode.subSystems.Turret;
+import org.firstinspires.ftc.teamcode.subSystems.FlyWheel;
 
-import java.util.Timer;
+import static java.lang.Math.abs;
 
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.delays.Delay;
@@ -29,12 +17,28 @@ import dev.nextftc.hardware.impl.CRServoEx;
 import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.impl.ServoEx;
 
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+
+import static dev.nextftc.extensions.pedro.PedroComponent.follower;
+
+import java.util.Timer;
+
 @Autonomous(name = "farRed")
 
 public class farRed extends NextFTCOpMode {
     MotorEx intake = new MotorEx("intake");
     CRServoEx uptake = new CRServoEx("uptake");
     ServoEx gate = new ServoEx("door");
+    DigitalChannel limitSwitch = null;
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
@@ -42,19 +46,29 @@ public class farRed extends NextFTCOpMode {
 
 
 
-    private final Pose startPose = new Pose(57, 5, Math.toRadians(180));
-    private final Pose launchPose = new Pose(52, 18, Math.toRadians(180));
-    private final Pose subStationPickUpPose1 = new Pose(15, 15, Math.toRadians(-157));
-    private final Pose subStationPickUpPose2 = new Pose(14, 9, Math.toRadians(-157));
-    private final Pose cyclePose = new Pose(19, 11, Math.toRadians(-160));
-    private final Pose cyclePose2 = new Pose(22, 11, Math.toRadians(180));
-    private final Pose cyclePose3 = new Pose(16.5, 11, Math.toRadians(180));
-    private final Pose parkPose = new Pose(43,17, Math.toRadians(180));
+    private final Pose startPose = new Pose(56, 5, Math.toRadians(180))
+            .mirror();
+    private final Pose launchPose = new Pose(55, 7, Math.toRadians(80))
+            .mirror();
+    private final Pose turnPose = new Pose(47, 7, Math.toRadians(180))
+            .mirror();
+    private final Pose subStationPickUpPose1 = new Pose(12, 16, Math.toRadians(-157))
+            .mirror();
+    private final Pose subStationPickUpPose2 = new Pose(11, 7, Math.toRadians(-157))
+            .mirror();
+    private final Pose cyclePose = new Pose(16, 10, Math.toRadians(-160))
+            .mirror();
+    private final Pose cyclePose2 = new Pose(20, 10, Math.toRadians(180))
+            .mirror();
+    private final Pose cyclePose3 = new Pose(14.5, 10, Math.toRadians(180))
+            .mirror();
+    private final Pose parkPose = new Pose(43,9, Math.toRadians(180))
+            .mirror();
 
     private final Pose spike3spot1 = new Pose(35, 35, Math.toRadians(180));
     private final Pose spike3spot2 = new Pose(15, 35, Math.toRadians(180));
 
-    public PathChain launchPath, parkPath, sub1Path, sub2Path, spike31, spike32, launchPath2, cyclePath, launchPath3, cyclePath2, cyclePath3;
+    public PathChain launchPath, parkPath, sub1Path, sub2Path, spike31, spike32, launchPath2, cyclePath, launchPath3, cyclePath2, cyclePath3, turnPath;
 
     public void buildPaths() {
         sub1Path = follower().pathBuilder()
@@ -69,9 +83,13 @@ public class farRed extends NextFTCOpMode {
                 .addPath(new BezierLine(subStationPickUpPose2, launchPose))
                 .setLinearHeadingInterpolation(subStationPickUpPose2.getHeading(), launchPose.getHeading())
                 .build();
+        turnPath = follower().pathBuilder()
+                .addPath(new BezierLine(launchPose, turnPose))
+                .setLinearHeadingInterpolation(launchPose.getHeading(), turnPose.getHeading())
+                .build();
         cyclePath = follower().pathBuilder()
-                .addPath(new BezierLine(launchPose, cyclePose))
-                .setLinearHeadingInterpolation(launchPose.getHeading(), cyclePose.getHeading())
+                .addPath(new BezierLine(turnPose, cyclePose))
+                .setLinearHeadingInterpolation(turnPose.getHeading(), cyclePose.getHeading())
                 .build();
         cyclePath2 = follower().pathBuilder()
                 .addPath(new BezierLine(cyclePose, cyclePose2))
@@ -110,11 +128,15 @@ public class farRed extends NextFTCOpMode {
             });
     public Command setNewTurretPose = new LambdaCommand()
             .setStart(() -> {
-                Turret.INSTANCE.targetPoseRed = new Pose(142, 138);
+                Turret.INSTANCE.targetPoseRed = new Pose(115, 130);
             });
     public Command setOldTurretPose = new LambdaCommand()
             .setStart(() -> {
-                Turret.INSTANCE.targetPoseRed = new Pose(142, 138);
+                Turret.INSTANCE.targetPoseRed = new Pose(165, 115);
+            });
+    public Command setMiddleTurretPose = new LambdaCommand()
+            .setStart(() -> {
+                Turret.INSTANCE.targetPoseRed = new Pose(105, 138);
             });
 
     public farRed() {
@@ -136,6 +158,8 @@ public class farRed extends NextFTCOpMode {
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0); // Switch to pipeline number 0
 
+        limitSwitch = hardwareMap.get(DigitalChannel.class, "limitSwitch");
+
         FlyWheel.INSTANCE.off.schedule();
         buildPaths();
         follower().setStartingPose(startPose);
@@ -143,46 +167,51 @@ public class farRed extends NextFTCOpMode {
 
         Turret.INSTANCE.limelight = limelight;
         Turret.INSTANCE.telemetry = telemetry;
-
     }
 
     private Command autonomousRoutine() {
         return new SequentialGroup(
-                setNewTurretPose,
-                relocalize,
+                setOldTurretPose,
                 runIntake,
                 openGate,
                 new Delay(3),
                 closeGate,
+                setNewTurretPose,
                 new FollowPath(sub1Path),
                 new FollowPath(sub2Path),
                 new Delay(.5),
                 new FollowPath(launchPath),
-                relocalize,
+                new Delay(.2),
                 openGate,
                 new Delay(2),
                 closeGate,
+                new FollowPath(turnPath),
                 new FollowPath(cyclePath),
                 new FollowPath(cyclePath2),
                 new FollowPath(cyclePath3),
+                new Delay(.2),
                 new FollowPath(launchPath2),
-                relocalize,
+                new Delay(.2),
                 openGate,
                 new Delay(2),
                 closeGate,
+                new FollowPath(turnPath),
                 new FollowPath(cyclePath),
                 new FollowPath(cyclePath2),
                 new FollowPath(cyclePath3),
+                new Delay(.2),
                 new FollowPath(launchPath2),
-                relocalize,
+                new Delay(.2),
                 openGate,
                 new Delay(2),
                 closeGate,
+                new FollowPath(turnPath),
                 new FollowPath(cyclePath),
                 new FollowPath(cyclePath2),
                 new FollowPath(cyclePath3),
+                new Delay(.2),
                 new FollowPath(launchPath2),
-                relocalize,
+                new Delay(.2),
                 openGate,
                 new Delay(2),
                 closeGate,
@@ -205,8 +234,13 @@ public class farRed extends NextFTCOpMode {
         Turret.INSTANCE.autoFlyWheelRegressionRed(telemetry);
         Turret.INSTANCE.turretMovement(true);
 
+        telemetry.addData("goal pos:", Turret.INSTANCE.targetPoseRed);
         telemetry.addData("Flywheel Goal", Turret.INSTANCE.flyWheelGoal);
         telemetry.update();
+
+        if (!limitSwitch.getState()) {
+            Turret.INSTANCE.turretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
     }
 
     public static Limelight3A limelight = null;
